@@ -22,6 +22,11 @@ describe("만세력 회귀", () => {
     expect(P(1990, 2, 3).r.pillars.year).toBe("己巳");
     expect(P(1990, 2, 4).r.pillars.year).toBe("庚午");
   });
+  it("음력 입력: 음력 1995-06-18 = 양력 1995-07-15와 동일 사주", () => {
+    const lunar = analyzePerson({ sex: "F", year: 1995, month: 6, day: 18, hourIdx: 4, calendar: "lunar" });
+    const solar = analyzePerson({ sex: "F", year: 1995, month: 7, day: 15, hourIdx: 4 });
+    expect(lunar.r.pillars).toEqual(solar.r.pillars);
+  });
   it("윤년 2월 29일도 계산된다", () => {
     expect(() => P(2000, 2, 29)).not.toThrow();
     expect(() => P(1988, 2, 29)).not.toThrow();

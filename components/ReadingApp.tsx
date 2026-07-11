@@ -12,8 +12,24 @@ const SUBMIT_LABEL: Record<Mode, string> = {
   yearly: "올해의 운세 보기",
 };
 
-interface FormState { name: string; sex: Sex; dob: string; hourIdx: number; }
-const emptyForm = (sex: Sex): FormState => ({ name: "", sex, dob: "", hourIdx: -1 });
+type Calendar = "solar" | "lunar" | "lunar-leap";
+interface FormState { name: string; sex: Sex; cal: Calendar; y: number; m: number; d: number; hourIdx: number; }
+const emptyForm = (sex: Sex): FormState => ({ name: "", sex, cal: "solar", y: 0, m: 0, d: 0, hourIdx: -1 });
+
+const YEARS = Array.from({ length: 2012 - 1930 + 1 }, (_, i) => 2012 - i);
+const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
+const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
+
+function validDate(f: FormState): string | null {
+  if (!f.y || !f.m || !f.d) return "생년월일을 선택해 주세요.";
+  if (f.cal === "solar") {
+    const dt = new Date(f.y, f.m - 1, f.d);
+    if (dt.getMonth() !== f.m - 1 || dt.getDate() !== f.d) return `${f.m}월에는 ${f.d}일이 없습니다. 날짜를 확인해 주세요.`;
+  } else if (f.d > 30) {
+    return "음력은 30일까지만 있습니다. 날짜를 확인해 주세요.";
+  }
+  return null;
+}
 
 function PersonFields({ legend, form, setForm, idPrefix }: {
   legend: string;
@@ -38,13 +54,34 @@ function PersonFields({ legend, form, setForm, idPrefix }: {
             <option value="M">남성</option>
           </select>
         </div>
-        <div className="field">
-          <label htmlFor={`${idPrefix}-dob`}>생년월일 (양력)</label>
-          <input id={`${idPrefix}-dob`} type="date" min="1930-01-01" max="2012-12-31"
-            value={form.dob} onChange={e => setForm({ ...form, dob: e.target.value })} />
+        <div className="field full">
+          <label htmlFor={`${idPrefix}-y`}>생년월일</label>
+          <div className="dob-row">
+            <select id={`${idPrefix}-cal`} aria-label="양력/음력" value={form.cal}
+              onChange={e => setForm({ ...form, cal: e.target.value as Calendar })}>
+              <option value="solar">양력</option>
+              <option value="lunar">음력</option>
+              <option value="lunar-leap">음력(윤달)</option>
+            </select>
+            <select id={`${idPrefix}-y`} aria-label="년" value={form.y}
+              onChange={e => setForm({ ...form, y: Number(e.target.value) })}>
+              <option value={0}>년</option>
+              {YEARS.map(y => <option key={y} value={y}>{y}년</option>)}
+            </select>
+            <select id={`${idPrefix}-m`} aria-label="월" value={form.m}
+              onChange={e => setForm({ ...form, m: Number(e.target.value) })}>
+              <option value={0}>월</option>
+              {MONTHS.map(m => <option key={m} value={m}>{m}월</option>)}
+            </select>
+            <select id={`${idPrefix}-d`} aria-label="일" value={form.d}
+              onChange={e => setForm({ ...form, d: Number(e.target.value) })}>
+              <option value={0}>일</option>
+              {DAYS.map(d => <option key={d} value={d}>{d}일</option>)}
+            </select>
+          </div>
         </div>
-        <div className="field">
-          <label htmlFor={`${idPrefix}-hour`}>태어난 시간</label>
+        <div className="field full">
+          <label htmlFor={`${idPrefix}-hour`}>태어난 시간 (시진)</label>
           <select id={`${idPrefix}-hour`} value={form.hourIdx}
             onChange={e => setForm({ ...form, hourIdx: Number(e.target.value) })}>
             {HOURS.map((h, i) => <option key={h} value={i - 1}>{h}</option>)}
@@ -67,22 +104,26 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
 
   const askRel = mode === "love" || mode === "gunghap";
 
-  const toPerson = (f: FormState, fallbackName: string) => {
-    if (!f.dob) return null;
-    const [y, m, d] = f.dob.split("-").map(Number);
-    return analyzePerson({ name: f.name, sex: f.sex, year: y, month: m, day: d, hourIdx: f.hourIdx, fallbackName });
-  };
+  const toPerson = (f: FormState, fallbackName: string) =>
+    analyzePerson({
+      name: f.name, sex: f.sex, year: f.y, month: f.m, day: f.d, hourIdx: f.hourIdx,
+      calendar: f.cal === "solar" ? "solar" : "lunar",
+      leap: f.cal === "lunar-leap",
+      fallbackName,
+    });
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErr("");
     try {
+      const errA = validDate(formA);
+      if (errA) { setErr("나의 정보: " + errA); return; }
       const A = toPerson(formA, "당신");
-      if (!A) { setErr("나의 생년월일을 입력해 주세요."); return; }
       let B = undefined;
       if (mode === "gunghap") {
-        B = toPerson(formB, "상대") ?? undefined;
-        if (!B) { setErr("상대의 생년월일을 입력해 주세요."); return; }
+        const errB = validDate(formB);
+        if (errB) { setErr("상대의 정보: " + errB); return; }
+        B = toPerson(formB, "상대");
       }
       setHtml(renderReport(mode, A, { B, relStatus, relGap, job }));
       requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
@@ -155,7 +196,7 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
         본 풀이는 전통 명리학의 틀을 빌린 재미와 성찰을 위한 콘텐츠입니다.<br />
         인생의 진짜 주인은 사주가 아니라 오늘의 당신입니다. 🌙
       </p>
-      <p className="powered">만세력 계산: ssaju 엔진 (진태양시·절기 기반)</p>
+      <p className="powered">만세력 계산: ssaju 엔진 (진태양시·절기 기반) · 시진 경계는 한국 표준(동경시 보정 +30분)을 따릅니다</p>
     </>
   );
 }

@@ -12,6 +12,10 @@ export interface PersonInput {
   day: number;
   /** 12지시 인덱스 (0=자시 … 11=해시), 모름이면 -1 */
   hourIdx: number;
+  /** 양력(기본) 또는 음력 */
+  calendar?: "solar" | "lunar";
+  /** 음력 윤달 여부 */
+  leap?: boolean;
   /** 기본 이름: 본인 "당신" / 상대 "상대" */
   fallbackName?: string;
 }
@@ -44,6 +48,7 @@ export function analyzePerson(input: PersonInput): Person {
     year: y, month: m, day: d,
     gender: sex === "F" ? "여" : "남",
   };
+  if (input.calendar === "lunar") { opt.calendar = "lunar"; opt.leap = !!input.leap; }
   const hourKnown = hourIdx >= 0;
   if (hourKnown) { opt.hour = hourIdx * 2; opt.minute = 0; }
   const r = calculateSaju(opt);

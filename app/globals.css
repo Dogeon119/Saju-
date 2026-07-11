@@ -282,3 +282,7 @@ a.mode-btn{text-decoration:none;}
   .kv{grid-template-columns:96px 1fr;}
   .cal-row{grid-template-columns:96px 72px 1fr; font-size:12.5px;}
 }
+
+/* 생년월일 드롭다운 행 */
+.dob-row{display:grid; grid-template-columns:96px 1fr 76px 76px; gap:8px;}
+@media (max-width:560px){ .dob-row{grid-template-columns:88px 1fr 68px 68px; gap:6px;} .dob-row select{padding:10px 6px;} }
