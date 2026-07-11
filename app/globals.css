@@ -249,3 +249,36 @@
 /* ── Next.js 보정 ── */
 a.mode-btn{text-decoration:none;}
 .mode-card{display:block;}
+
+/* ── 6모드 개편 추가 스타일 (풀이 항목화) ── */
+.kvs{display:grid; grid-template-columns:1fr; gap:0; border:1px solid var(--line); border-radius:12px; overflow:hidden; margin:12px 0 14px;}
+.kv{display:grid; grid-template-columns:118px 1fr; border-bottom:1px solid var(--line);}
+.kv:last-child{border-bottom:0;}
+.kv .kl{background:#f4f0e4; color:#7c6631; font-size:13px; padding:9px 12px; letter-spacing:.04em; display:flex; align-items:center;}
+.kv .kd{padding:9px 13px; font-size:14.5px; color:var(--ink); background:var(--card);}
+.term-note{
+  background:#f2f2ee; border-left:3px solid var(--mut); border-radius:0 8px 8px 0;
+  padding:9px 13px; margin:12px 0 4px; font-size:13px; color:var(--ink-soft); line-height:1.75;
+}
+.grp{font-family:var(--serif); font-size:16px; color:var(--cheong-deep); letter-spacing:.05em;
+  margin:24px 0 10px; padding-bottom:6px; border-bottom:1px dashed var(--line);}
+.fl{margin:0 0 16px;}
+.fl-t{font-weight:700; color:var(--cheong-deep); font-size:14.5px; margin:0 0 5px;
+  padding-left:10px; border-left:3px solid var(--cheong);}
+.fl-b p{margin:0 0 8px; color:var(--ink-soft); max-width:62ch;}
+.fl-b p:last-child{margin-bottom:0;}
+.cal{border:1px solid var(--line); border-radius:12px; overflow:hidden; margin:12px 0;}
+.cal-row{display:grid; grid-template-columns:128px 92px 1fr; border-bottom:1px solid var(--line); font-size:13.5px;}
+.cal-row:last-child{border-bottom:0;}
+.cal-row .cm{background:#f4f0e4; padding:8px 10px; color:#7c6631; font-variant-numeric:tabular-nums;}
+.cal-row .ct2{padding:8px 6px; color:var(--cheong-deep); font-weight:600; border-right:1px dashed var(--line);}
+.cal-row .cd{padding:8px 12px; color:var(--ink-soft);}
+.cal-row .cd em{color:var(--dan); font-style:normal; font-weight:600;}
+.qa{margin:0 0 14px; border:1px solid var(--line); border-radius:12px; padding:12px 16px; background:var(--card);}
+.qa .q{font-weight:800; color:var(--cheong-deep); margin:0 0 6px; font-family:var(--serif);}
+.qa .a{margin:0; color:var(--ink-soft);}
+.form-hint{font-size:12.5px; color:var(--mut); margin:2px 4px 0;}
+@media (max-width:560px){
+  .kv{grid-template-columns:96px 1fr;}
+  .cal-row{grid-template-columns:96px 72px 1fr; font-size:12.5px;}
+}

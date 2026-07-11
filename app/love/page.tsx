@@ -4,8 +4,8 @@ import ModeTabs from "@/components/ModeTabs";
 import ReadingApp from "@/components/ReadingApp";
 
 export const metadata: Metadata = {
-  title: "연애운",
-  description: "타고난 사랑의 기질과 올해의 연애 흐름 — 일간·배우자궁·오행·신살·세운으로 깊게 풀어 드립니다.",
+  title: "연애비책",
+  description: "나의 매력, 연애운의 흐름과 시기, 운명의 짝과 조심할 악연까지 일곱 장의 연애 풀이.",
 };
 
 export default function Page() {

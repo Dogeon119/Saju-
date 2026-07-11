@@ -2,14 +2,14 @@
 import { useRef, useState } from "react";
 import { HOURS } from "@/lib/engine/constants";
 import { analyzePerson, type Sex } from "@/lib/engine/analyze";
-import { renderReading, type Mode } from "@/lib/engine/render";
+import { renderReport, type Mode } from "@/lib/engine/modes";
+import { REL_STATUS, REL_GAP, JOB_STATUS } from "@/content/deep";
 
 const SUBMIT_LABEL: Record<Mode, string> = {
-  love: "연애운 풀이 보기",
-  gunghap: "궁합 풀이 보기",
-  forecast: "인연 예보 보기",
-  marriage: "결혼운 풀이 보기",
-  today: "오늘의 연애 보기",
+  saju: "정통사주 감정 보기",
+  love: "연애비책 풀이 보기",
+  gunghap: "사주궁합 풀이 보기",
+  yearly: "올해의 운세 보기",
 };
 
 interface FormState { name: string; sex: Sex; dob: string; hourIdx: number; }
@@ -58,9 +58,14 @@ function PersonFields({ legend, form, setForm, idPrefix }: {
 export default function ReadingApp({ mode }: { mode: Mode }) {
   const [formA, setFormA] = useState<FormState>(() => emptyForm("F"));
   const [formB, setFormB] = useState<FormState>(() => emptyForm("M"));
+  const [relStatus, setRelStatus] = useState(0);
+  const [relGap, setRelGap] = useState(0);
+  const [job, setJob] = useState<string>(JOB_STATUS[0]);
   const [html, setHtml] = useState("");
   const [err, setErr] = useState("");
   const resultRef = useRef<HTMLDivElement>(null);
+
+  const askRel = mode === "love" || mode === "gunghap";
 
   const toPerson = (f: FormState, fallbackName: string) => {
     if (!f.dob) return null;
@@ -79,7 +84,7 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
         B = toPerson(formB, "상대") ?? undefined;
         if (!B) { setErr("상대의 생년월일을 입력해 주세요."); return; }
       }
-      setHtml(renderReading(mode, A, B));
+      setHtml(renderReport(mode, A, { B, relStatus, relGap, job }));
       requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
     } catch (ex) {
       setErr("풀이 중 오류가 났습니다: " + (ex instanceof Error ? ex.message : String(ex)));
@@ -93,13 +98,51 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
         {mode === "gunghap" && (
           <PersonFields legend="상대의 정보" form={formB} setForm={setFormB} idPrefix="b" />
         )}
+
+        {askRel && (
+          <fieldset>
+            <legend>지금의 관계</legend>
+            <div className="grid">
+              <div className="field">
+                <label htmlFor="rel-status">{mode === "gunghap" ? "두 사람의 관계는?" : "지금 나의 연애 상태는?"}</label>
+                <select id="rel-status" value={relStatus} onChange={e => setRelStatus(Number(e.target.value))}>
+                  {REL_STATUS.map((s, i) => <option key={s} value={i}>{s}</option>)}
+                </select>
+              </div>
+              {relStatus > 0 && (
+                <div className="field">
+                  <label htmlFor="rel-gap">그 상태가 된 지 얼마나 되었나요?</label>
+                  <select id="rel-gap" value={relGap} onChange={e => setRelGap(Number(e.target.value))}>
+                    {REL_GAP.map((g, i) => <option key={g} value={i}>{g}</option>)}
+                  </select>
+                </div>
+              )}
+            </div>
+            <p className="form-hint">상태를 알려 주시면 그 상황에 맞춘 처방 장(章)이 더 정확해집니다.</p>
+          </fieldset>
+        )}
+
+        {mode === "yearly" && (
+          <fieldset>
+            <legend>나의 현재</legend>
+            <div className="grid">
+              <div className="field">
+                <label htmlFor="job">현재 무슨 일을 하고 계신가요?</label>
+                <select id="job" value={job} onChange={e => setJob(e.target.value)}>
+                  {JOB_STATUS.map(j => <option key={j} value={j}>{j}</option>)}
+                </select>
+              </div>
+            </div>
+            <p className="form-hint">직장·학업 상태에 맞춰 5장(직장운)과 6장(학업·계약운)의 무게가 달라집니다.</p>
+          </fieldset>
+        )}
+
         <button className="submit" type="submit">{SUBMIT_LABEL[mode]}</button>
         {err && <p className="err" style={{ display: "block" }}>{err}</p>}
       </form>
 
       {html && (
         <div id="result" ref={resultRef} style={{ display: "block" }}>
-          {/* 풀이 HTML은 이스케이프된 사용자 입력 + 자체 콘텐츠만 포함 (analyzePerson에서 escapeHtml 처리) */}
           <div dangerouslySetInnerHTML={{ __html: html }} />
           <button className="again" type="button"
             onClick={() => { setHtml(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}>

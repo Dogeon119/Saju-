@@ -4,8 +4,8 @@ import ModeTabs from "@/components/ModeTabs";
 import ReadingApp from "@/components/ReadingApp";
 
 export const metadata: Metadata = {
-  title: "결혼운",
-  description: "배우자별·배우자궁·혼인 대길년 — 결혼의 때와 결혼 생활의 그림을 감정합니다.",
+  title: "올해의 운세",
+  description: "올해의 총운·재물·건강·애정·직장·학업과 12개월 월별 운세, 길흉육조.",
 };
 
 export default function Page() {
@@ -13,7 +13,7 @@ export default function Page() {
     <div className="wrap">
       <SiteHeader />
       <ModeTabs />
-      <ReadingApp mode="marriage" />
+      <ReadingApp mode="yearly" />
     </div>
   );
 }

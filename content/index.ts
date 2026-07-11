@@ -7,3 +7,7 @@ export * from "./branch-relations";
 export * from "./elements";
 export * from "./lover-profile";
 export * from "./marriage";
+export * from "./jeongtong";
+export * from "./reunion";
+export * from "./yearly";
+export * from "./deep";

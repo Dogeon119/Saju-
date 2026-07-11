@@ -4,8 +4,8 @@ import ModeTabs from "@/components/ModeTabs";
 import ReadingApp from "@/components/ReadingApp";
 
 export const metadata: Metadata = {
-  title: "궁합",
-  description: "두 사람의 사주를 겹쳐 일간 십성·배우자궁 합충·오행 보완·띠 궁합까지 감정합니다.",
+  title: "사주궁합",
+  description: "기본 분석부터 인연·성격·감정·체질·재물·혼인궁합까지 여덟 장의 심층 궁합.",
 };
 
 export default function Page() {

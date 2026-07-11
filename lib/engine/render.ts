@@ -491,7 +491,8 @@ function renderToday(A){
   return html;
 }
 
-export { sec, paras, tocHTML, pillarsHTML, ohaengHTML, charms, partnerElem, partnerStars, starName };
+export { sec, paras, tocHTML, pillarsHTML, ohaengHTML, baseChartSec, wolunSolarMonth, charms, partnerElem, partnerStars, starName, renderLove, renderGunghap, renderForecast, renderMarriage, renderToday };
+// 참고: 이 파일은 legacy 추출본에서 소스로 승격되었다 (2026-07-12, 6모드 개편). 이제 직접 수정한다.
 
 export type Mode = "love" | "gunghap" | "forecast" | "marriage" | "today";
 
