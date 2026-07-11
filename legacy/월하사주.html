@@ -463,7 +463,8 @@ function tenGod(me,other){
 
 /* ═══════════════ ssaju 엔진 어댑터 ═══════════════ */
 function analyze(sfx){
-  const name=document.getElementById('name'+sfx).value.trim()||(sfx==='A'?'당신':'상대');
+  const rawName=document.getElementById('name'+sfx).value.trim()||(sfx==='A'?'당신':'상대');
+  const name=rawName.replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const sex=document.getElementById('sex'+sfx).value;
   const dob=document.getElementById('dob'+sfx).value;
   if(!dob) return null;

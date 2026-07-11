@@ -1,7 +1,10 @@
 # 월하(月下) 프로젝트 구조도 & 기능 분석
 
 > Next.js + TailwindCSS + Supabase 기반 사주 풀이 서비스 (연애운·궁합·인연예보·결혼운·오늘의연애)
-> (마지막 갱신: 2026-07-12 — **문서 초판**: 현재 모놀리스 구조 기록 + v1 목표 구조·로드맵 확정)
+> (마지막 갱신: 2026-07-12 — **Phase 0 코드 완료**: Next.js 이식 + 엔진 테스트 15종 + CI. 남은 항목: Vercel 연결)
+>
+> ⚠️ 아래 "현재 구조(모놀리스)" 절은 Phase 0 이전의 기록이다. 모놀리스는 `legacy/월하사주.html`로 보존되었고,
+> 실제 코드는 이제 [v1 목표 구조](#-v1-목표-구조--마이그레이션-로드맵)의 앱/엔진/콘텐츠 계층을 따른다.
 >
 > 이 문서는 두 부분으로 구성된다:
 > 1. **현재 구조** (아래) — 지금 코드가 실제로 이렇게 생겼다
@@ -182,13 +185,15 @@
 > 각 Phase는 **배포 가능한 상태로 끝난다** (SION 방식). 완료 시 이 문서의 갱신 주석을 업데이트한다.
 
 ### Phase 0 — 리포 부트스트랩 (기반 공사)
-- [ ] Next.js + TS + Tailwind v4 스캐폴드, pnpm 전환
-- [ ] `월하사주.html` → `legacy/`로 이동 (보존)
-- [ ] 모놀리스 해체 이식: 엔진 → `lib/engine/` · 텍스트 → `content/` · 렌더러 → 모드 페이지 + 컴포넌트
-- [ ] ssaju를 IIFE 인라인 대신 **npm 의존성**으로 전환
-- [ ] 엔진 회귀 테스트 (`engine.test.ts`) + CI
-- [ ] Vercel 연결 (push 자동 배포)
+- [x] Next.js + TS + Tailwind v4 스캐폴드, pnpm 전환 (2026-07-12)
+- [x] `월하사주.html` → `legacy/`로 이동 (보존, XSS 패치 반영본)
+- [x] 모놀리스 해체 이식: `scripts/extract-from-legacy.mjs`가 vm 실행 + 직렬화로 **텍스트·로직 100% 동일** 추출
+      → 엔진 `lib/engine/` (analyze·relations 수기 타입 / render·constants 자동생성) · 텍스트 `content/` 7파일
+- [x] ssaju를 IIFE 인라인 대신 **npm 의존성**으로 전환 (v0.2.0)
+- [x] 엔진 회귀 테스트 15종 (`engine.test.ts` — 만세력 교차검증·렌더 스윕 400회+·점수 범위·XSS) + CI (`.github/workflows/ci.yml`)
+- [ ] Vercel 연결 (push 자동 배포) — vercel.com에서 저장소 Import 필요 (수동 1회)
 - **완료 기준(DoD)**: 배포된 사이트에서 5개 모드가 현재 HTML과 동일하게 동작
+- 잔여 기술부채: `lib/engine/render.ts`는 자동생성(@ts-nocheck) — Phase 1에서 컴포넌트화(PillarBoard 등)하며 타입 승격
 
 ### Phase 1 — 공유 (성장 엔진 먼저)
 - [ ] 풀이 결과 저장(익명) + `share/[id]` 읽기전용 페이지
