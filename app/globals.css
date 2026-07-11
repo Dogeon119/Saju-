@@ -286,3 +286,46 @@ a.mode-btn{text-decoration:none;}
 /* 생년월일 드롭다운 행 */
 .dob-row{display:grid; grid-template-columns:96px 1fr 76px 76px; gap:8px;}
 @media (max-width:560px){ .dob-row{grid-template-columns:88px 1fr 68px 68px; gap:6px;} .dob-row select{padding:10px 6px;} }
+
+/* ══ 가독성·몰입 오버홀 (2026-07-12) — 글자 크게, 여백 넉넉히, 한 번에 한 생각 ══ */
+.rp{padding:36px 30px; margin-bottom:30px; border-radius:20px;}
+.rp h2{font-size:25px; letter-spacing:.06em; line-height:1.5; margin:4px 0 8px;}
+.rp h2 .no{font-size:14px; margin-bottom:8px;}
+.rp .sub{font-size:14.5px; margin-bottom:22px; line-height:1.8;}
+.rp p{font-size:17px; line-height:2.05; margin:0 0 20px; max-width:58ch; color:#3e4650;}
+.key{font-size:15.5px; padding:14px 18px; margin-bottom:26px; line-height:1.9; border-radius:12px;}
+.key::before{margin-top:6px;}
+.toc-greet{font-size:18px; line-height:2.15; margin-bottom:20px;}
+.toc a{padding:12px 6px; font-size:15.5px;}
+
+/* 풀이 블록 — 소제목을 또렷하게, 블록 사이 숨 쉴 틈 */
+.fl{margin:0 0 34px;}
+.fl-t{font-size:17px; margin:0 0 12px; padding:0 0 10px 0; border-left:0;
+  border-bottom:2px solid var(--cheong-pale); color:var(--cheong-deep);
+  font-family:var(--serif); letter-spacing:.02em;}
+.fl-t::before{content:'◆ '; color:var(--cheong); font-size:12px; vertical-align:2px;}
+.fl-b p{font-size:17px; line-height:2.05; margin:0 0 18px; max-width:58ch;}
+.grp{font-size:19px; margin:40px 0 22px; padding-bottom:10px;}
+
+/* 표·카드류 — 본문보다 낮은 밀도감 유지하되 시원하게 */
+.kvs{margin:16px 0 22px; border-radius:14px;}
+.kv .kl{font-size:14px; padding:12px 14px;}
+.kv .kd{font-size:15.5px; padding:12px 15px; line-height:1.8;}
+.term-note{font-size:14px; padding:12px 16px; margin:18px 0 8px; line-height:1.9;}
+.cal-row{font-size:14.5px;}
+.cal-row .cm,.cal-row .ct2,.cal-row .cd{padding:11px 12px;}
+.qa{padding:18px 20px; margin-bottom:18px;}
+.qa .q{font-size:16.5px;}
+.qa .a{font-size:16px; line-height:2;}
+ul.pts li{font-size:16.5px; line-height:2; margin-bottom:12px; max-width:58ch;}
+.badges{gap:9px; margin:12px 0 18px;}
+.badge{font-size:13.5px; padding:5px 15px;}
+.prophecy{font-size:19px; line-height:2.2; padding:10px 0 10px 20px; margin:16px 0;}
+.score-line{font-size:18px;}
+.yr-why{font-size:13.5px; margin-bottom:14px;}
+
+@media (max-width:560px){
+  .rp{padding:26px 18px;}
+  .rp p,.fl-b p,ul.pts li{font-size:16px;}
+  .rp h2{font-size:21px;}
+}

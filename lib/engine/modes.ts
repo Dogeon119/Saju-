@@ -118,7 +118,7 @@ export function renderSaju(A) {
     paras(ILGAN_CHAR[ds]) +
     `<p><strong>오행의 저울</strong> — ${ELEM[maxE]}이 가장 강하고 ${ELEM[minE]}이 가장 약합니다.</p>` +
     paras(ELEM_GEN_EXCESS[maxE]) + paras(ELEM_GEN_LACK[minE]),
-    `${STEMS[ds].kr}(${STEMS[ds].hj}) 일간 — ${ILGAN_CHAR[ds].split("—")[1]?.split(".")[0]?.trim() ?? "타고난 기질"}`);
+    `${STEMS[ds].kr}(${STEMS[ds].hj}) 일간 — ${["하늘로 곧게 자라는 큰 나무", "바위 틈에도 꽃을 피우는 덩굴", "만물을 비추는 태양", "한 사람을 데우는 촛불", "흔들리지 않는 산", "무엇이든 길러 내는 논밭", "결단의 무쇠", "세공을 마친 보석", "모든 강을 받아들이는 바다", "소리 없이 스며드는 봄비"][ds]}`);
 
   const tally = tallyTenGods(A);
   const top = tally[0], second = tally[1];
@@ -181,8 +181,8 @@ export function renderSaju(A) {
   const gk = r.advanced.geukguk;
   html += sec("第九章", "직업운", `격국 「${gk}」`,
     paras(CAREER_GEUKGUK[gk] ?? CAREER_GEUKGUK["기타"]) +
-    (top ? `<p><strong>재능의 무기</strong> — ${TEN_GOD_PROFILE[top[0]].split("—")[1] ?? ""}</p>` : "") +
-    note("격국(格局)이란? 사주 전체의 구조가 어느 방향으로 짜여 있는지를 나타내는 틀입니다. 직업 적성의 큰 지도로 읽습니다."),
+    (top ? `<p><strong>재능의 무기</strong> — ${first(TEN_GOD_PROFILE[top[0]].split(", ").slice(1).join(", ") || TEN_GOD_PROFILE[top[0]], 2)}</p>` : "") +
+    note("격국(格局)이란? 사주 전체의 구조가 어느 방향으로 짜여 있는지를 나타내는 틀이에요. 직업 적성의 큰 지도로 읽으시면 됩니다."),
     (CAREER_GEUKGUK[gk] ?? CAREER_GEUKGUK["기타"]).split("—")[1]?.split(".")[0]?.trim() ?? "");
 
   html += sec("第十章", "건강운", "오행이 가리키는 몸의 주의보",
@@ -672,10 +672,10 @@ export function renderYearly(A, job = "직장인") {
 
 /* ═══════════ 리포트 조립 ═══════════ */
 const GREET = {
-  saju: A => `어서 오셔요, ${A.name}님. 오늘은 태어난 날의 하늘부터 앞으로 5년의 바람까지, ${A.name}님의 사주 전체를 열세 장에 걸쳐 찬찬히 펼쳐 보겠습니다. 어려운 말은 장마다 아래에 따로 풀어 두었으니, 편한 마음으로 따라오셔요.`,
-  love: A => `어서 오셔요, ${A.name}님. 곧 만나게 될 인연이 궁금하시지요. 나의 매력부터 운명의 짝, 그리고 조심해야 할 악연까지 — 붉은 실을 따라 일곱 장으로 읽어 드리겠습니다.`,
-  gunghap: (A, B) => `어서 오셔요, ${A.name}님, 그리고 ${B?.name ?? "상대"}님. 두 분의 사주를 나란히 펼쳐 놓고 — 성격·감정·체질·재물·혼인까지 여덟 장에 걸쳐 겹쳐 보겠습니다. 좋은 것만 말하지 않을 테니, 그만큼 믿고 읽어 주셔요.`,
-  yearly: A => `어서 오셔요, ${A.name}님. 올 한 해의 지도를 펼쳐 보는 자리입니다. 총운부터 달별 흐름, 길흉육조까지 — 위기는 미리 알면 절반이 되고, 기회는 미리 알면 두 배가 됩니다.`,
+  saju: A => `어서 오세요, ${A.name}님! 오늘은 태어난 날의 하늘부터 앞으로 5년의 바람까지, ${A.name}님의 사주 전체를 열세 장에 걸쳐 찬찬히 읽어 드릴게요. 어려운 용어는 장마다 아래쪽에 따로 풀어 뒀으니까, 편한 마음으로 따라오시면 돼요.`,
+  love: A => `어서 오세요, ${A.name}님! 곧 만나게 될 인연, 궁금하시죠? 내가 가진 매력부터 운명의 짝, 그리고 꼭 걸러야 할 악연까지 — 붉은 실을 따라 일곱 장으로 차근차근 읽어 드릴게요.`,
+  gunghap: (A, B) => `어서 오세요, ${A.name}님, 그리고 ${B?.name ?? "상대"}님! 두 분의 사주를 나란히 펼쳐 놓고 성격·감정·체질·재물·혼인까지 여덟 장에 걸쳐 겹쳐 볼게요. 좋은 얘기만 하지는 않을 거예요 — 그래야 진짜 도움이 되니까요.`,
+  yearly: A => `어서 오세요, ${A.name}님! 올 한 해의 지도를 같이 펼쳐 보는 시간이에요. 총운부터 달별 흐름, 길흉육조까지 — 위기는 미리 알면 절반이 되고, 기회는 미리 알면 두 배가 되거든요.`,
 };
 
 export function renderReport(mode: Mode, A: Person, opts: ReportOptions = {}): string {
