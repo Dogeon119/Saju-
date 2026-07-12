@@ -53,9 +53,7 @@ export default function HomeGreeting() {
           <span className="mt">
             {name ? `${name}님의 오늘` : "오늘의 일진"} — <span className="gz-inline">{gz.hj}</span>
           </span>
-          <span className="md">
-            {dateStr} · {gz.line}{name ? " — 오늘 운세가 이미 준비돼 있어요" : " — 오늘의 운세 펼쳐 보기"}
-          </span>
+          <span className="md">{dateStr} · {gz.line}</span>
         </span>
         <span className="chev" aria-hidden="true">›</span>
       </Link>
