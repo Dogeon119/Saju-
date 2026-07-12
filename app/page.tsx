@@ -6,12 +6,25 @@ export default function HomePage() {
   return (
     <div className="wrap">
       <SiteHeader />
-      <nav className="modes" aria-label="풀이 모드" style={{ gridTemplateColumns: "repeat(1, 1fr)", gap: 12 }}>
+      <section className="home-hero">
+        <h1>
+          달빛 아래,
+          <br />
+          당신의 <b>인연</b>을 읽습니다
+        </h1>
+        <p>진태양시·절기 기반 만세력으로 정통사주부터 올해의 운세까지, 네 갈래의 감정서를 펼쳐 드려요.</p>
+      </section>
+      <nav className="mode-list" aria-label="풀이 모드">
         {MODES.map(m => (
-          <Link key={m.href} href={m.href} className="mode-btn mode-card" style={{ textAlign: "left", padding: "18px 20px" }}>
-            <span className="mk" style={{ float: "left", marginRight: 14, fontSize: 26 }}>{m.mk}</span>
-            <span className="mt" style={{ fontSize: 16 }}>{m.mt}</span>
-            <span style={{ display: "block", color: "var(--paper-dim)", fontSize: 13, marginTop: 2 }}>{m.desc}</span>
+          <Link key={m.href} href={m.href} className="mode-row">
+            <span className="mk">{m.mk}</span>
+            <span>
+              <span className="mt">{m.mt}</span>
+              <span className="md">{m.desc}</span>
+            </span>
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
           </Link>
         ))}
       </nav>

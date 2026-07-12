@@ -48,22 +48,25 @@ function PersonFields({ legend, form, setForm, idPrefix }: {
             value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
         </div>
         <div className="field">
-          <label htmlFor={`${idPrefix}-sex`}>성별</label>
-          <select id={`${idPrefix}-sex`} value={form.sex}
-            onChange={e => setForm({ ...form, sex: e.target.value as Sex })}>
-            <option value="F">여성</option>
-            <option value="M">남성</option>
-          </select>
+          <span className="field-label">성별</span>
+          <div className="seg" role="group" aria-label="성별">
+            {([["F", "여성"], ["M", "남성"]] as [Sex, string][]).map(([v, t]) => (
+              <button key={v} type="button" aria-pressed={form.sex === v}
+                className={`seg-btn${form.sex === v ? " on" : ""}`}
+                onClick={() => setForm({ ...form, sex: v })}>{t}</button>
+            ))}
+          </div>
         </div>
         <div className="field full">
-          <label htmlFor={`${idPrefix}-y`}>생년월일</label>
+          <span className="field-label">생년월일</span>
+          <div className="seg" role="group" aria-label="양력/음력">
+            {([["solar", "양력"], ["lunar", "음력"], ["lunar-leap", "음력(윤달)"]] as [Calendar, string][]).map(([v, t]) => (
+              <button key={v} type="button" aria-pressed={form.cal === v}
+                className={`seg-btn${form.cal === v ? " on" : ""}`}
+                onClick={() => setForm({ ...form, cal: v })}>{t}</button>
+            ))}
+          </div>
           <div className="dob-row">
-            <select id={`${idPrefix}-cal`} aria-label="양력/음력" value={form.cal}
-              onChange={e => setForm({ ...form, cal: e.target.value as Calendar })}>
-              <option value="solar">양력</option>
-              <option value="lunar">음력</option>
-              <option value="lunar-leap">음력(윤달)</option>
-            </select>
             <select id={`${idPrefix}-y`} aria-label="년" value={form.y}
               onChange={e => setForm({ ...form, y: Number(e.target.value) })}>
               <option value={0}>년</option>
