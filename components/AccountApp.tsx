@@ -74,13 +74,10 @@ export default function AccountApp() {
       if (!/.+@.+\..+/.test(email)) throw new Error("이메일 형식을 확인해 주세요.");
       if (pw.length < 6) throw new Error("비밀번호는 6자 이상이어야 해요.");
       if (tab === "up") {
-        const { data, error } = await sb.auth.signUp({
-          email, password: pw,
-          options: { emailRedirectTo: `${window.location.origin}/account` },
-        });
+        const { data, error } = await sb.auth.signUp({ email, password: pw });
         if (error) throw error;
         if (data.session) setNotice("서재가 열렸어요. 아래에 사주 프로필을 등록해 보세요.");
-        else setNotice("확인 메일을 보냈어요. 메일함에서 인증을 마치면 로그인할 수 있어요.");
+        else setNotice("가입은 됐는데 자동 로그인이 안 됐어요. 로그인 탭으로 들어와 주세요.");
       } else {
         const { error } = await sb.auth.signInWithPassword({ email, password: pw });
         if (error) throw error;
