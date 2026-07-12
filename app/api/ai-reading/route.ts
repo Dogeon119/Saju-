@@ -1,36 +1,14 @@
 /** AI 심층 풀이 — 서버에서 ssaju 재계산 후 LLM 스트리밍 릴레이 (Phase 3 스파이크).
  *  TODO(Phase 3 본구현): 동일 (사주+모드) 캐싱 — 크레딧·비용 방어 1선
  *  TODO(Phase 3 본구현): 무료 1일 1회 제한 (IP 또는 회원 기준) */
-import { analyzePerson, type PersonInput, type Sex } from "@/lib/engine/analyze";
+import { analyzePerson } from "@/lib/engine/analyze";
 import type { Mode } from "@/lib/engine/modes";
 import { buildAiPrompt } from "@/lib/ai/prompt";
 import { streamChat } from "@/lib/ai/client";
+import { MODES, toInput, clampIdx, type PersonPayload } from "@/lib/api/person";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
-
-const MODES: Mode[] = ["saju", "love", "gunghap", "yearly"];
-
-interface PersonPayload {
-  name?: string; sex?: string; year?: number; month?: number; day?: number;
-  hourIdx?: number; calendar?: string; leap?: boolean;
-}
-
-/** 클라이언트가 보낸 원국은 신뢰하지 않는다 — 생년월일시만 받아 서버에서 재계산 */
-function toInput(p: PersonPayload, fallbackName: string): PersonInput | null {
-  const { year, month, day } = p;
-  if (!year || !month || !day) return null;
-  if (year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) return null;
-  const hourIdx = typeof p.hourIdx === "number" && p.hourIdx >= 0 && p.hourIdx <= 11 ? p.hourIdx : -1;
-  return {
-    name: String(p.name ?? "").slice(0, 20),
-    sex: (p.sex === "M" ? "M" : "F") as Sex,
-    year, month, day, hourIdx,
-    calendar: p.calendar === "lunar" ? "lunar" : "solar",
-    leap: !!p.leap,
-    fallbackName,
-  };
-}
 
 export async function POST(req: Request) {
   let body: {
@@ -71,11 +49,6 @@ export async function POST(req: Request) {
   } catch (ex) {
     return err(502, ex instanceof Error ? ex.message : "AI 풀이 생성에 실패했어요.");
   }
-}
-
-function clampIdx(v: unknown, max: number): number {
-  const n = typeof v === "number" ? Math.floor(v) : 0;
-  return n >= 0 && n <= max ? n : 0;
 }
 
 function err(status: number, message: string) {

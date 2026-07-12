@@ -121,6 +121,10 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
   const [ai, setAi] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
   const [aiErr, setAiErr] = useState("");
+  const [shareUrl, setShareUrl] = useState("");
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareErr, setShareErr] = useState("");
+  const [copied, setCopied] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const askRel = mode === "love" || mode === "gunghap";
@@ -148,6 +152,7 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
       }
       setHtml(renderReport(mode, A, { B, relStatus, relGap, job }));
       setAi(""); setAiErr("");
+      setShareUrl(""); setShareErr(""); setCopied(false);
       requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
     } catch (ex) {
       setErr("풀이 중 오류가 났습니다: " + (ex instanceof Error ? ex.message : String(ex)));
@@ -159,6 +164,35 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
     calendar: f.cal === "solar" ? "solar" : "lunar",
     leap: f.cal === "lunar-leap",
   });
+
+  const onShare = async () => {
+    if (shareBusy) return;
+    setShareBusy(true); setShareErr(""); setCopied(false);
+    try {
+      const res = await fetch("/api/reading", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode,
+          me: personPayload(formA),
+          partner: mode === "gunghap" ? personPayload(formB) : undefined,
+          relStatus, relGap, job,
+        }),
+      });
+      const j = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(j?.error || `요청 실패 (${res.status})`);
+      const url = `${window.location.origin}${j.path}`;
+      setShareUrl(url);
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+      } catch { /* 클립보드 권한 없으면 링크 표시만 */ }
+    } catch (ex) {
+      setShareErr(ex instanceof Error ? ex.message : String(ex));
+    } finally {
+      setShareBusy(false);
+    }
+  };
 
   const onAiReading = async () => {
     if (aiBusy) return;
@@ -247,6 +281,21 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
       {html && (
         <div id="result" ref={resultRef} style={{ display: "block" }}>
           <SceneReader html={html} />
+
+          <div className="share-sec">
+            {!shareUrl && (
+              <button className="ghost-btn" type="button" onClick={onShare} disabled={shareBusy}>
+                {shareBusy ? "링크를 만드는 중이에요" : "감정서 공유 링크 만들기"}
+              </button>
+            )}
+            {shareUrl && (
+              <div className="share-done">
+                <p className="share-note">{copied ? "링크를 복사했어요. 카톡에 붙여 넣어 보내 보세요." : "아래 링크를 복사해서 보내 보세요."}</p>
+                <p className="share-link">{shareUrl}</p>
+              </div>
+            )}
+            {shareErr && <p className="err" style={{ display: "block" }}>{shareErr}</p>}
+          </div>
 
           <div className="ai-sec">
             {!ai && !aiBusy && (
