@@ -24,16 +24,34 @@ function fmtDateTime(iso: string): string {
   return `${d.getMonth() + 1}. ${d.getDate()}. ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+interface AdminUser {
+  id: string; email: string; created_at: string;
+  has_profile: boolean; profile_name: string | null; readings: number;
+}
+
 type Step = "pin" | "login" | "checking" | "denied" | "ok";
+type View = "dash" | "members";
 
 export default function AdminApp() {
   const [step, setStep] = useState<Step>("pin");
+  const [view, setView] = useState<View>("dash");
   const [pin, setPin] = useState("");
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [stats, setStats] = useState<Stats | null>(null);
+  const [users, setUsers] = useState<AdminUser[] | null>(null);
+
+  const loadUsers = async () => {
+    if (users) return;
+    const { data: { session } } = await supabaseBrowser().auth.getSession();
+    if (!session) return;
+    const res = await fetch("/api/admin/users", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (res.ok) setUsers(await res.json());
+  };
 
   const tryStats = async (): Promise<"ok" | "denied" | "anon"> => {
     const { data: { session } } = await supabaseBrowser().auth.getSession();
@@ -141,6 +159,38 @@ export default function AdminApp() {
         </button>
       </div>
 
+      <div className="adm2-tabs">
+        <button type="button" className={`adm2-tab${view === "dash" ? " on" : ""}`}
+          onClick={() => setView("dash")}>대시보드</button>
+        <button type="button" className={`adm2-tab${view === "members" ? " on" : ""}`}
+          onClick={() => { setView("members"); loadUsers(); }}>회원 관리</button>
+      </div>
+
+      {view === "members" && (
+        <>
+          <h2 className="adm2-h" style={{ marginTop: 0 }}>회원 {users ? `${users.length}명` : ""}</h2>
+          {!users && <p className="adm2-sub">불러오는 중입니다.</p>}
+          {users && users.length === 0 && <p className="adm2-sub">아직 회원이 없습니다.</p>}
+          {users && users.length > 0 && (
+            <div className="adm2-list">
+              {users.map(u => (
+                <div key={u.id} className="adm2-row" style={{ cursor: "default" }}>
+                  <span>
+                    {u.email}
+                    <span className="sub">
+                      가입 {fmtDateTime(u.created_at)} · 프로필 {u.has_profile ? (u.profile_name || "등록") : "없음"}
+                    </span>
+                  </span>
+                  <span className="adm2-badge">감정서 {u.readings}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {view === "dash" && (
+        <>
       <div className="adm2-grid">
         <div className="adm2-stat"><b>{stats.readings_total}</b><span>감정서 누적</span></div>
         <div className="adm2-stat"><b>{stats.readings_7d}</b><span>최근 7일</span></div>
@@ -190,6 +240,8 @@ export default function AdminApp() {
           </Link>
         ))}
       </div>
+        </>
+      )}
     </>
   );
 }

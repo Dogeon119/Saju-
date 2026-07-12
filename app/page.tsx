@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import HomeGreeting from "@/components/HomeGreeting";
 import { MODES } from "@/components/modes";
 
 export default function HomePage() {
@@ -12,8 +13,9 @@ export default function HomePage() {
           <br />
           당신의 <b>인연</b>을 읽습니다
         </h1>
-        <p>진태양시·절기 기반 만세력으로 정통사주부터 올해의 운세까지, 네 갈래의 감정서를 펼쳐 드려요.</p>
+        <p>진태양시·절기 기반 만세력으로, 오늘 하루의 운부터 평생의 사주까지 감정서로 펼쳐 드려요.</p>
       </section>
+      <HomeGreeting />
       <nav className="mode-list" aria-label="풀이 모드">
         {MODES.map(m => (
           <Link key={m.href} href={m.href} className="mode-row">

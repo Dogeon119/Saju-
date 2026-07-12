@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
 import { supabaseBrowser } from "@/lib/db/browser";
@@ -25,6 +25,7 @@ export default function AccountApp() {
   const [profBusy, setProfBusy] = useState(false);
   const [profMsg, setProfMsg] = useState("");
   const [profErr, setProfErr] = useState("");
+  const profFormRef = useRef<HTMLFormElement>(null);
 
   const loadMine = useCallback(async (uid: string) => {
     const { data: prof } = await supabaseBrowser().from("profiles").select("*").eq("id", uid).maybeSingle();
@@ -57,8 +58,10 @@ export default function AccountApp() {
       if (tab === "up") {
         const { data, error } = await sb.auth.signUp({ email, password: pw });
         if (error) throw error;
-        if (data.session) setNotice("가입 완료! 아래에 사주 프로필을 등록해 보세요.");
-        else setNotice("가입은 됐는데 자동 로그인이 안 됐어요. 로그인 탭으로 들어와 주세요.");
+        if (data.session) {
+          setNotice("가입 완료! 이제 이름과 태어난 날·시간을 알려 주세요. 한 번만 등록하면 모든 풀이가 자동으로 시작되고, 오늘의 운세가 매일 준비돼요.");
+          setTimeout(() => profFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+        } else setNotice("가입은 됐는데 자동 로그인이 안 됐어요. 로그인 탭으로 들어와 주세요.");
       } else {
         const { error } = await sb.auth.signInWithPassword({ email, password: pw });
         if (error) throw error;
@@ -88,7 +91,7 @@ export default function AccountApp() {
         .from("profiles")
         .upsert({ id: session.user.id, ...formToProfile(form), updated_at: new Date().toISOString() });
       if (error) throw new Error("저장에 실패했어요. 잠시 뒤 다시 시도해 주세요.");
-      setProfMsg("사주 프로필을 저장했어요. 이제 어느 풀이든 생일 입력 없이 시작돼요.");
+      setProfMsg(`${form.name.trim() || "회원"}님의 사주를 기억해 둘게요. 이제 어느 풀이든 생일 입력 없이 시작되고, 오늘 탭을 열면 하루 운세가 바로 펼쳐져요.`);
     } catch (ex) {
       setProfErr(ex instanceof Error ? ex.message : String(ex));
     } finally {
@@ -150,12 +153,21 @@ export default function AccountApp() {
         <button className="ghost-btn acct-out" type="button" onClick={onSignOut}>로그아웃</button>
       </div>
 
-      <form onSubmit={onSaveProfile} noValidate>
+      {notice && <p className="notice" style={{ marginBottom: 20 }}>{notice}</p>}
+
+      <form onSubmit={onSaveProfile} noValidate ref={profFormRef}>
         <PersonFields legend="내 사주 프로필" form={form} setForm={setForm} idPrefix="p" />
         <button className="submit" type="submit" disabled={profBusy}>
           {profBusy ? "저장하는 중이에요" : "사주 프로필 저장"}
         </button>
-        {profMsg && <p className="notice">{profMsg}</p>}
+        {profMsg && (
+          <>
+            <p className="notice">{profMsg}</p>
+            <Link href="/daily" className="ghost-btn cta-link" style={{ marginTop: 12 }}>
+              오늘의 운세 바로 보기
+            </Link>
+          </>
+        )}
         {profErr && <p className="err" style={{ display: "block" }}>{profErr}</p>}
       </form>
 

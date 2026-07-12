@@ -6,29 +6,29 @@
    모든 색은 아래 토큰만 사용한다. 토큰 외 hex 금지 (§1·§7)
    ══════════════════════════════════════════════════════════════ */
 :root{
-  /* 지면 (紙面) — 한지 미색 */
-  --ink-0:#F4EFE4;
-  --ink-1:#FAF6EC;
-  --ink-2:#EEE7D6;
-  --ink-3:#E3DAC4;
+  /* 지면 (紙面) — 한지: 누런 기를 뺀 맑은 종이 톤 (v2 보정) */
+  --ink-0:#F3F1EC;
+  --ink-1:#FCFBF7;
+  --ink-2:#F0EDE4;
+  --ink-3:#E6E2D6;
   /* 괘선 (罫線) */
-  --line:#DED4BD;
-  --line-strong:#C9BC9E;
-  /* 금박 (金箔) — 밝은 지면용 심금 */
-  --gold:#8A7448;
-  --gold-dim:#A2946F;
-  /* 먹 — 글자 */
-  --paper:#2E2A23;
-  --paper-dim:#7A7263;
+  --line:#E1DDD1;
+  --line-strong:#C7C1B0;
+  /* 금박 (金箔) — 채도를 올린 앤티크 골드 */
+  --gold:#96762F;
+  --gold-dim:#B39B62;
+  /* 먹 — 글자 (대비 강화) */
+  --paper:#25221C;
+  --paper-dim:#6E6757;
   /* 낙관 (落款) — 도장 전용 */
   --nakgwan:#96453A;
   --nakgwan-text:#8F3B32;
-  /* 오행 5색 — 밝은 지면 억제판 */
-  --e-mok:#4E7A48;
-  --e-hwa:#A84A38;
-  --e-to:#8A6C34;
-  --e-geum:#6E7570;
-  --e-su:#3E6178;
+  /* 오행 5색 — 밝은 지면 선명판 */
+  --e-mok:#3E7A4A;
+  --e-hwa:#B0442F;
+  --e-to:#8A6A2C;
+  --e-geum:#5C686B;
+  --e-su:#2F618C;
   /* 폰트 */
   --serif:var(--font-serif),"Noto Serif KR","Batang",serif;
   --sans:-apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
@@ -413,6 +413,10 @@ body:has(.admin-shell) .gtabs{display:none;}
 .adm2-btn:hover{background:#2A2F36;}
 .adm2-btn:disabled{opacity:.4; cursor:default;}
 .adm2-err{color:#DC2626; font-size:13px; margin-top:12px;}
+.adm2-tabs{display:flex; gap:6px; margin-bottom:20px;}
+.adm2-tab{height:36px; padding:0 16px; border-radius:8px; border:1px solid #E5E7EB;
+  background:#FFFFFF; color:#6B7280; font-size:13.5px; font-weight:600; cursor:pointer; font-family:var(--sans);}
+.adm2-tab.on{background:#111418; color:#FFFFFF; border-color:#111418;}
 .adm2-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:8px;}
 .adm2-stat{background:#FFFFFF; border:1px solid #E5E7EB; border-radius:14px; padding:18px;}
 .adm2-stat b{display:block; font-size:26px; font-weight:700; font-variant-numeric:tabular-nums; color:#111418;}

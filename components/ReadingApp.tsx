@@ -54,10 +54,39 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
   const [inviteCopied, setInviteCopied] = useState(false);
   const [prefilled, setPrefilled] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
+  const dirtyA = useRef(false); // 유저가 직접 입력을 시작했는지
 
   const askRel = mode === "love" || mode === "gunghap";
 
-  /* 로그인 + 프로필 저장 유저는 생일을 다시 입력하지 않는다 (비어 있을 때만 자동 채움) */
+  const toPerson = (f: FormState, fallbackName: string) =>
+    analyzePerson({ ...personPayload(f), fallbackName });
+
+  /** 폼 상태로 풀이 실행 — 제출 버튼과 자동 실행이 공유 */
+  const runReading = (fA: FormState, fB?: FormState): boolean => {
+    setErr("");
+    try {
+      const errA = validDate(fA);
+      if (errA) { setErr("나의 정보: " + errA); return false; }
+      const A = toPerson(fA, "당신");
+      let B = undefined;
+      if (mode === "gunghap") {
+        const errB = validDate(fB ?? formB);
+        if (errB) { setErr("상대의 정보: " + errB); return false; }
+        B = toPerson(fB ?? formB, "상대");
+      }
+      setHtml(renderReport(mode, A, { B, relStatus, relGap, job }));
+      setAi(""); setAiErr("");
+      setShareUrl(""); setShareErr(""); setCopied(false);
+      requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      return true;
+    } catch (ex) {
+      setErr("풀이 중 오류가 났습니다: " + (ex instanceof Error ? ex.message : String(ex)));
+      return false;
+    }
+  };
+
+  /* 로그인 + 프로필 저장 유저는 생일을 다시 입력하지 않는다.
+     오늘의운세 탭은 프로필이 있으면 아예 자동으로 펼쳐진다. */
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -66,42 +95,22 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
         const { data: { session } } = await sb.auth.getSession();
         if (!session || cancelled) return;
         const { data } = await sb.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
-        if (!data || cancelled) return;
+        if (!data || cancelled || dirtyA.current) return;
         const p = data as ProfileRow;
         if (!p.year || !p.month || !p.day) return;
-        setFormA(f => {
-          if (f.y || f.name) return f; // 이미 입력 중이면 건드리지 않는다
-          setPrefilled(true);
-          return profileToForm(p);
-        });
+        const nf = profileToForm(p);
+        setFormA(nf);
+        setPrefilled(true);
+        if (mode === "daily") runReading(nf); // 오늘 탭은 원클릭도 없이 바로
       } catch { /* 게스트 흐름은 그대로 */ }
     })();
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const toPerson = (f: FormState, fallbackName: string) =>
-    analyzePerson({ ...personPayload(f), fallbackName });
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErr("");
-    try {
-      const errA = validDate(formA);
-      if (errA) { setErr("나의 정보: " + errA); return; }
-      const A = toPerson(formA, "당신");
-      let B = undefined;
-      if (mode === "gunghap") {
-        const errB = validDate(formB);
-        if (errB) { setErr("상대의 정보: " + errB); return; }
-        B = toPerson(formB, "상대");
-      }
-      setHtml(renderReport(mode, A, { B, relStatus, relGap, job }));
-      setAi(""); setAiErr("");
-      setShareUrl(""); setShareErr(""); setCopied(false);
-      requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-    } catch (ex) {
-      setErr("풀이 중 오류가 났습니다: " + (ex instanceof Error ? ex.message : String(ex)));
-    }
+    runReading(formA, formB);
   };
 
   const onShare = async () => {
@@ -200,8 +209,9 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
   return (
     <>
       <form onSubmit={onSubmit} noValidate>
-        {prefilled && <p className="form-hint">내 서재의 사주 프로필로 채워 뒀어요. 수정해도 프로필은 바뀌지 않아요.</p>}
-        <PersonFields legend="나의 정보" form={formA} setForm={setFormA} idPrefix="a" />
+        {prefilled && <p className="form-hint">회원 프로필로 채워 뒀어요. 수정해도 프로필은 바뀌지 않아요.</p>}
+        <PersonFields legend="나의 정보" form={formA}
+          setForm={f => { dirtyA.current = true; setFormA(f); }} idPrefix="a" />
         {mode === "gunghap" && (
           <PersonFields legend="상대의 정보" form={formB} setForm={setFormB} idPrefix="b" />
         )}
