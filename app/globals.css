@@ -434,6 +434,25 @@ body:has(.admin-shell) .gtabs{display:none;}
 .adm2-tab{height:36px; padding:0 16px; border-radius:8px; border:1px solid #E5E7EB;
   background:#FFFFFF; color:#6B7280; font-size:13.5px; font-weight:600; cursor:pointer; font-family:var(--sans);}
 .adm2-tab.on{background:#111418; color:#FFFFFF; border-color:#111418;}
+.adm2-toolbar{display:flex; justify-content:space-between; align-items:center; gap:12px; margin:28px 0 12px; flex-wrap:wrap;}
+.adm2-search{height:38px; width:220px; font-size:14px;}
+.adm2-chips{display:flex; gap:5px; flex-wrap:wrap;}
+.adm2-chip{height:30px; padding:0 12px; border-radius:8px; border:1px solid #E5E7EB;
+  background:#FFFFFF; color:#6B7280; font-size:12.5px; font-weight:600; cursor:pointer; font-family:var(--sans);}
+.adm2-chip.on{background:#111418; color:#FFFFFF; border-color:#111418;}
+.adm2-act{height:28px; padding:0 12px; border-radius:7px; border:1px solid #D1D5DB;
+  background:#FFFFFF; color:#374151; font-size:12.5px; font-weight:600; cursor:pointer; font-family:var(--sans);}
+.adm2-act:hover{background:#F3F4F6;}
+.adm2-act.danger{border-color:#DC2626; color:#DC2626;}
+.adm2-act.danger:hover{background:#FEF2F2;}
+.adm2-link{color:#111418; text-decoration:none; font-weight:600;}
+.adm2-link:hover{text-decoration:underline;}
+.adm2-kv{display:flex; justify-content:space-between; gap:12px; padding:10px 2px;
+  border-bottom:1px solid #F3F4F6; font-size:13.5px; color:#374151;}
+.adm2-kv:last-child{border-bottom:0;}
+.adm2-kv span:last-child{font-variant-numeric:tabular-nums; color:#111418; font-weight:600;}
+.adm2-ok{color:#047857 !important;}
+.adm2-bad{color:#DC2626 !important;}
 .adm2-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:8px;}
 .adm2-stat{background:#FFFFFF; border:1px solid #E5E7EB; border-radius:14px; padding:18px;}
 .adm2-stat b{display:block; font-size:26px; font-weight:700; font-variant-numeric:tabular-nums; color:#111418;}
