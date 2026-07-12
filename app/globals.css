@@ -66,7 +66,8 @@ body{
   line-height:1.9; font-size:17px; -webkit-font-smoothing:antialiased;
   word-break:keep-all; overflow-wrap:break-word; /* 한국어 단어 중간 꺾임 금지 (부록 G) */
 }
-.wrap{max-width:760px; margin:0 auto; padding:48px 24px 120px; box-sizing:border-box;}
+/* 유동 스케일 — 화면 폭을 따라 부드럽게 (부록 G v2, 640px 절벽 제거) */
+.wrap{max-width:760px; margin:0 auto; padding:clamp(20px,5vw,48px) clamp(16px,3vw,24px) clamp(96px,14vw,120px); box-sizing:border-box;}
 
 /* ── 헤더 — 라지 타이틀 ── */
 header{margin-bottom:40px; display:flex; align-items:center; justify-content:space-between; gap:16px;}
@@ -90,18 +91,19 @@ header{margin-bottom:40px; display:flex; align-items:center; justify-content:spa
 /* 홈 히어로 + 수묵 달 장식 (DESIGN.md 부록 F) */
 .home-hero{margin:8px 0 40px; position:relative;}
 .home-hero h1{
-  font-family:var(--serif); font-weight:600; font-size:clamp(34px,7vw,46px);
-  letter-spacing:.06em; line-height:1.4; margin:0 0 14px; color:var(--paper);
+  font-family:var(--serif); font-weight:600; font-size:clamp(27px,7vw,46px);
+  letter-spacing:.06em; line-height:1.4; margin:0 0 clamp(8px,2vw,14px); color:var(--paper);
   position:relative; z-index:1;
 }
 .home-hero h1 b{color:var(--gold); font-weight:600;}
-.home-hero p{color:var(--paper-dim); font-size:17px; margin:0; max-width:40ch; position:relative; z-index:1;}
+.home-hero p{color:var(--paper-dim); font-size:clamp(14.5px,1.1vw+10px,17px); margin:0; max-width:40ch; position:relative; z-index:1;}
 .hero-art{
-  position:absolute; right:-28px; top:-46px; width:min(48%,350px); height:auto;
+  position:absolute; right:clamp(-36px,-3vw,-24px); top:clamp(-40px,-4vw,-30px);
+  width:clamp(200px,44vw,350px); height:auto;
   pointer-events:none; z-index:0; animation:fadeIn .9s ease-out both;
 }
 @media (max-width:640px){
-  .hero-art{width:230px; right:-36px; top:-34px; opacity:.55;}
+  .hero-art{opacity:.55;}
 }
 
 /* 운문 오너먼트 · 빈 상태 일러스트 */
@@ -137,19 +139,20 @@ header{margin-bottom:40px; display:flex; align-items:center; justify-content:spa
 a.mode-btn{text-decoration:none;}
 
 /* ── 페이지 아이덴티티 헤더 — 도장 + 큰 제목 (모든 탭 공통) ── */
-.page-head{display:flex; gap:18px; align-items:center; margin:4px 0 28px;}
+.page-head{display:flex; gap:clamp(13px,2vw,18px); align-items:center; margin:0 0 clamp(20px,3.5vw,28px);}
 .page-mk{
-  width:58px; height:58px; flex:none; border:1.5px solid var(--gold-dim); border-radius:0;
+  width:clamp(45px,4vw+30px,58px); height:clamp(45px,4vw+30px,58px); flex:none;
+  border:1.5px solid var(--gold-dim); border-radius:0;
   display:flex; align-items:center; justify-content:center;
-  font-family:var(--serif); font-size:27px; color:var(--gold); background:var(--ink-1);
+  font-family:var(--serif); font-size:clamp(21px,2vw+14px,27px); color:var(--gold); background:var(--ink-1);
 }
-.page-title{font-family:var(--serif); font-size:27px; font-weight:600; letter-spacing:.04em; margin:0; color:var(--paper); line-height:1.3;}
-.page-desc{font-family:var(--sans); font-size:14.5px; color:var(--paper-dim); margin:6px 0 0; line-height:1.7;}
+.page-title{font-family:var(--serif); font-size:clamp(20px,2vw+13px,27px); font-weight:600; letter-spacing:.04em; margin:0; color:var(--paper); line-height:1.3;}
+.page-desc{font-family:var(--sans); font-size:clamp(13px,1vw+9px,14.5px); color:var(--paper-dim); margin:5px 0 0; line-height:1.7;}
 
 /* ── 기능 블록 카드 — 지면과 또렷이 분리 ── */
 .card{
   background:var(--ink-1); border:1px solid var(--line); border-radius:var(--r-group);
-  padding:24px; margin-bottom:16px;
+  padding:clamp(16px,2.6vw,24px); margin-bottom:16px;
 }
 .card-h{font-family:var(--sans); color:var(--paper-dim); letter-spacing:.08em; font-size:13.5px; font-weight:600; margin:0 0 14px;}
 
@@ -173,7 +176,7 @@ a.mode-btn{text-decoration:none;}
 .mode-row:hover .chev{transform:translateX(3px); color:var(--gold);}
 
 /* ── 폼 — 그룹 카드 ── */
-form{background:var(--ink-1); border:1px solid var(--line); border-radius:var(--r-group); padding:24px;}
+form{background:var(--ink-1); border:1px solid var(--line); border-radius:var(--r-group); padding:clamp(16px,2.6vw,24px);}
 fieldset{border:0; padding:0; margin:0 0 24px;}
 legend{
   font-family:var(--sans); color:var(--paper-dim); padding:0; letter-spacing:.08em;
@@ -791,24 +794,14 @@ body:has(.admin-shell) .gtabs{display:none;}
 .gtab.on{color:var(--gold); box-shadow:inset 0 2px 0 var(--gold);}
 body{padding-bottom:84px;} /* 하단 탭 자리 */
 
-/* ══ 모바일 압축 스케일 (DESIGN.md 부록 G) — 본문 활자는 유지, UI 표면만 조인다 ══ */
+/* ══ 모바일 압축 스케일 (DESIGN.md 부록 G) — 크기 대부분은 위 clamp() 유동 스케일이 담당,
+   여기는 구조가 바뀌는 것만 (그리드 전환·sticky 해제·행 조밀화) ══ */
 @media (max-width:640px){
-  .wrap{padding:22px 16px 96px;}
-  header{margin-bottom:24px;}
+  header{margin-bottom:22px;}
   .logo{width:34px; height:34px;}
   .brand-name{font-size:19px;}
   .head-link{padding:8px 13px; font-size:12.5px;}
-
-  /* 홈 히어로 */
   .home-hero{margin:4px 0 26px;}
-  .home-hero h1{font-size:29px;}
-  .home-hero p{font-size:15px;}
-
-  /* 페이지 아이덴티티 */
-  .page-head{gap:14px; margin:0 0 20px;}
-  .page-mk{width:46px; height:46px; font-size:22px;}
-  .page-title{font-size:21px;}
-  .page-desc{font-size:13.5px; margin-top:4px;}
 
   /* 기능 리스트·위젯 행 — 조밀하게 */
   .mode-row{padding:13px 15px; gap:12px;}
@@ -817,25 +810,22 @@ body{padding-bottom:84px;} /* 하단 탭 자리 */
   .mode-row .md{font-size:13px; margin-top:2px;}
   .mode-list{margin-bottom:20px;}
 
-  /* 홈 모드 그리드 — 기능이 첫 화면에 한눈에 (2열 타일) */
+  /* 홈 모드 그리드 — 가로형 콤팩트 타일 2열, 기능이 첫 화면에 한눈에 */
   .mode-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;
     background:transparent; border:0; border-radius:0; overflow:visible;}
   .mode-grid .mode-row{
-    display:flex; flex-direction:column; align-items:flex-start; gap:4px;
+    display:flex; align-items:center; gap:10px;
     background:var(--ink-1); border:1px solid var(--line); border-radius:var(--r-card);
-    padding:13px 14px 12px;
+    padding:12px 13px;
   }
   .mode-grid .mode-row:last-child:nth-child(odd){grid-column:1 / -1;}
-  .mode-grid .mode-row .mk{width:auto; text-align:left; font-size:22px;}
-  .mode-grid .mode-row .mt{font-size:15px;}
+  .mode-grid .mode-row .mk{width:auto; text-align:left; font-size:20px;}
+  .mode-grid .mode-row .mt{font-size:14.5px;}
   .mode-grid .mode-row .md,.mode-grid .mode-row .chev{display:none;}
 
-  /* 카드·폼·아코디언 */
-  .card{padding:18px;}
-  form{padding:18px;}
+  /* 아코디언·회원 히어로 */
   .disc-head{padding:15px 16px; gap:13px;}
   .disc-pad{padding:2px 16px 18px;}
-  .acct-hero{padding:18px;}
   .acct-hero-top{gap:13px;}
   .acct-ava{width:52px; height:52px; font-size:24px;}
   .acct-name{font-size:19px;}
@@ -858,6 +848,14 @@ body{padding-bottom:84px;} /* 하단 탭 자리 */
   .scene{gap:12px; padding:36px 0;}
   .scene-title,.rp h2{font-size:23px;}
   .rp p,.scene-body p,.fl-b p{font-size:16px;}
+}
+
+/* 초소형 화면 (≤380px) — 타일 1열 낙하 방지용 미세 조정 */
+@media (max-width:380px){
+  .mode-grid{gap:6px;}
+  .mode-grid .mode-row{padding:11px 11px; gap:8px;}
+  .mode-grid .mode-row .mt{font-size:13.5px;}
+  .acct-stat{padding:5px 9px; font-size:12px;}
 }
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important; animation:none !important;}
