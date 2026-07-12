@@ -13,7 +13,6 @@ export default function SiteHeader() {
       </Link>
       <span className="head-actions">
         <ThemeToggle />
-        <Link href="/account" className="head-link">내 서재</Link>
       </span>
     </header>
   );

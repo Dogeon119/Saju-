@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import SiteHeader from "@/components/SiteHeader";
 import AdminApp from "@/components/AdminApp";
 
 export const metadata: Metadata = {
-  title: "장부",
+  title: "관리자",
   robots: { index: false, follow: false },
 };
 
+/** 관리자 콘솔 — 브랜드 테마와 분리된 모던 화이트 구역 (DESIGN.md 부록 D) */
 export default function AdminPage() {
   return (
-    <div className="wrap">
-      <SiteHeader />
-      <h1 className="acct-h" style={{ marginTop: 0 }}>월하의 장부</h1>
-      <AdminApp />
+    <div className="admin-shell">
+      <div className="admin-con">
+        <AdminApp />
+      </div>
     </div>
   );
 }

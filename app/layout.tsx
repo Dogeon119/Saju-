@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Serif_KR } from "next/font/google";
+import GlobalTabs from "@/components/GlobalTabs";
 import "./globals.css";
 
 /* DESIGN.md §2 — 명조는 Noto Serif KR 셀프호스팅, weight 400·600만 */
@@ -28,7 +29,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <GlobalTabs />
+      </body>
     </html>
   );
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
-import ModeTabs from "@/components/ModeTabs";
 import ReadingApp from "@/components/ReadingApp";
 
 export const metadata: Metadata = {
@@ -12,7 +11,7 @@ export default function Page() {
   return (
     <div className="wrap">
       <SiteHeader />
-      <ModeTabs />
+      <p className="mode-desc">오늘의 일진이 내 사주에 닿는 자리 — 매일 새로 뜨는 하루 운이에요.</p>
       <ReadingApp mode="daily" />
     </div>
   );

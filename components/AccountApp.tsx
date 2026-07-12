@@ -8,21 +8,6 @@ import {
   type FormState, type ProfileRow,
 } from "./person-form";
 
-const MODE_TITLE: Record<string, string> = {
-  saju: "정통사주", love: "연애비책", gunghap: "사주궁합", yearly: "올해의운세",
-  daily: "오늘의운세", manse: "만세력",
-};
-const MODE_MK: Record<string, string> = {
-  saju: "命", love: "戀", gunghap: "緣", yearly: "歲", daily: "日", manse: "曆",
-};
-
-interface HistRow { share_id: string; mode: string; created_at: string; }
-
-function fmtDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
-}
-
 export default function AccountApp() {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
@@ -35,23 +20,15 @@ export default function AccountApp() {
   const [authErr, setAuthErr] = useState("");
   const [notice, setNotice] = useState("");
 
-  /* 프로필 · 히스토리 */
+  /* 사주 프로필 */
   const [form, setForm] = useState<FormState>(() => emptyForm("F"));
   const [profBusy, setProfBusy] = useState(false);
   const [profMsg, setProfMsg] = useState("");
   const [profErr, setProfErr] = useState("");
-  const [hist, setHist] = useState<HistRow[]>([]);
-  const [histLoaded, setHistLoaded] = useState(false);
 
   const loadMine = useCallback(async (uid: string) => {
-    const sb = supabaseBrowser();
-    const [{ data: prof }, { data: rows }] = await Promise.all([
-      sb.from("profiles").select("*").eq("id", uid).maybeSingle(),
-      sb.from("readings").select("share_id,mode,created_at").order("created_at", { ascending: false }).limit(30),
-    ]);
+    const { data: prof } = await supabaseBrowser().from("profiles").select("*").eq("id", uid).maybeSingle();
     if (prof) setForm(profileToForm(prof as ProfileRow));
-    setHist((rows as HistRow[]) ?? []);
-    setHistLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -64,7 +41,7 @@ export default function AccountApp() {
     const { data: { subscription } } = sb.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       if (s) loadMine(s.user.id);
-      else { setHist([]); setHistLoaded(false); setForm(emptyForm("F")); }
+      else setForm(emptyForm("F"));
     });
     return () => subscription.unsubscribe();
   }, [loadMine]);
@@ -80,7 +57,7 @@ export default function AccountApp() {
       if (tab === "up") {
         const { data, error } = await sb.auth.signUp({ email, password: pw });
         if (error) throw error;
-        if (data.session) setNotice("서재가 열렸어요. 아래에 사주 프로필을 등록해 보세요.");
+        if (data.session) setNotice("가입 완료! 아래에 사주 프로필을 등록해 보세요.");
         else setNotice("가입은 됐는데 자동 로그인이 안 됐어요. 로그인 탭으로 들어와 주세요.");
       } else {
         const { error } = await sb.auth.signInWithPassword({ email, password: pw });
@@ -124,13 +101,13 @@ export default function AccountApp() {
     setNotice(""); setAuthErr("");
   };
 
-  if (!ready) return <p className="ai-wait">서재를 여는 중이에요.</p>;
+  if (!ready) return <p className="ai-wait">회원 정보를 확인하는 중이에요.</p>;
 
   if (!session) {
     return (
       <form onSubmit={onAuth} noValidate>
         <fieldset>
-          <legend>내 서재</legend>
+          <legend>월하 회원</legend>
           <div className="seg auth-seg" role="group" aria-label="로그인/회원가입">
             {([["in", "로그인"], ["up", "회원가입"]] as const).map(([v, t]) => (
               <button key={v} type="button" aria-pressed={tab === v}
@@ -152,12 +129,12 @@ export default function AccountApp() {
           </div>
         </fieldset>
         <button className="submit" type="submit" disabled={authBusy}>
-          {authBusy ? "확인하는 중이에요" : tab === "up" ? "서재 만들기" : "서재 열기"}
+          {authBusy ? "확인하는 중이에요" : tab === "up" ? "가입하기" : "로그인"}
         </button>
         {notice && <p className="notice">{notice}</p>}
         {authErr && <p className="err" style={{ display: "block" }}>{authErr}</p>}
         <p className="form-hint">
-          사주 프로필을 한 번 등록해 두면, 모든 풀이가 생일 입력 없이 시작되고 만든 감정서가 여기 모여요.
+          사주 프로필을 한 번 등록해 두면 모든 풀이가 생일 입력 없이 시작되고, 만든 감정서는 서재 탭에 모여요.
         </p>
       </form>
     );
@@ -168,7 +145,7 @@ export default function AccountApp() {
       <div className="acct-row">
         <div>
           <p className="acct-email">{session.user.email}</p>
-          <p className="acct-sub">월하의 서재 회원</p>
+          <p className="acct-sub">월하 회원</p>
         </div>
         <button className="ghost-btn acct-out" type="button" onClick={onSignOut}>로그아웃</button>
       </div>
@@ -182,27 +159,16 @@ export default function AccountApp() {
         {profErr && <p className="err" style={{ display: "block" }}>{profErr}</p>}
       </form>
 
-      <h2 className="acct-h">내 감정서</h2>
-      {!histLoaded && <p className="ai-wait">감정서를 찾는 중이에요.</p>}
-      {histLoaded && hist.length === 0 && (
-        <p className="acct-empty">
-          아직 서재에 감정서가 없어요. 풀이 결과에서 &ldquo;감정서 공유 링크 만들기&rdquo;를 누르면 여기에 보관돼요.
-        </p>
-      )}
-      {hist.length > 0 && (
-        <div className="mode-list">
-          {hist.map(h => (
-            <Link key={h.share_id} href={`/r/${h.share_id}`} className="mode-row">
-              <span className="mk">{MODE_MK[h.mode] ?? "命"}</span>
-              <span>
-                <span className="mt">{MODE_TITLE[h.mode] ?? h.mode} 감정서</span>
-                <span className="md">{fmtDate(h.created_at)}</span>
-              </span>
-              <span className="chev" aria-hidden="true">›</span>
-            </Link>
-          ))}
-        </div>
-      )}
+      <div className="mode-list" style={{ marginTop: 32 }}>
+        <Link href="/library" className="mode-row">
+          <span className="mk">冊</span>
+          <span>
+            <span className="mt">나의 서재</span>
+            <span className="md">내가 만든 감정서 보관함으로 가기</span>
+          </span>
+          <span className="chev" aria-hidden="true">›</span>
+        </Link>
+      </div>
     </>
   );
 }
