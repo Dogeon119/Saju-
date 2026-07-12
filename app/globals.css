@@ -64,6 +64,7 @@ body{
   margin:0; color:var(--paper); font-family:var(--sans);
   background:var(--ink-0);
   line-height:1.9; font-size:17px; -webkit-font-smoothing:antialiased;
+  word-break:keep-all; overflow-wrap:break-word; /* 한국어 단어 중간 꺾임 금지 (부록 G) */
 }
 .wrap{max-width:760px; margin:0 auto; padding:48px 24px 120px; box-sizing:border-box;}
 
@@ -790,9 +791,62 @@ body:has(.admin-shell) .gtabs{display:none;}
 .gtab.on{color:var(--gold); box-shadow:inset 0 2px 0 var(--gold);}
 body{padding-bottom:84px;} /* 하단 탭 자리 */
 
+/* ══ 모바일 압축 스케일 (DESIGN.md 부록 G) — 본문 활자는 유지, UI 표면만 조인다 ══ */
 @media (max-width:640px){
-  .wrap{padding:32px 16px 96px;}
-  .modes{margin:0 -16px 24px; padding:8px 16px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  .wrap{padding:22px 16px 96px;}
+  header{margin-bottom:24px;}
+  .logo{width:34px; height:34px;}
+  .brand-name{font-size:19px;}
+  .head-link{padding:8px 13px; font-size:12.5px;}
+
+  /* 홈 히어로 */
+  .home-hero{margin:4px 0 26px;}
+  .home-hero h1{font-size:29px;}
+  .home-hero p{font-size:15px;}
+
+  /* 페이지 아이덴티티 */
+  .page-head{gap:14px; margin:0 0 20px;}
+  .page-mk{width:46px; height:46px; font-size:22px;}
+  .page-title{font-size:21px;}
+  .page-desc{font-size:13.5px; margin-top:4px;}
+
+  /* 기능 리스트·위젯 행 — 조밀하게 */
+  .mode-row{padding:13px 15px; gap:12px;}
+  .mode-row .mk{font-size:21px; width:28px;}
+  .mode-row .mt{font-size:15.5px;}
+  .mode-row .md{font-size:13px; margin-top:2px;}
+  .mode-list{margin-bottom:20px;}
+
+  /* 홈 모드 그리드 — 기능이 첫 화면에 한눈에 (2열 타일) */
+  .mode-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;
+    background:transparent; border:0; border-radius:0; overflow:visible;}
+  .mode-grid .mode-row{
+    display:flex; flex-direction:column; align-items:flex-start; gap:4px;
+    background:var(--ink-1); border:1px solid var(--line); border-radius:var(--r-card);
+    padding:13px 14px 12px;
+  }
+  .mode-grid .mode-row:last-child:nth-child(odd){grid-column:1 / -1;}
+  .mode-grid .mode-row .mk{width:auto; text-align:left; font-size:22px;}
+  .mode-grid .mode-row .mt{font-size:15px;}
+  .mode-grid .mode-row .md,.mode-grid .mode-row .chev{display:none;}
+
+  /* 카드·폼·아코디언 */
+  .card{padding:18px;}
+  form{padding:18px;}
+  .disc-head{padding:15px 16px; gap:13px;}
+  .disc-pad{padding:2px 16px 18px;}
+  .acct-hero{padding:18px;}
+  .acct-ava{width:54px; height:54px; font-size:25px;}
+  .acct-name{font-size:19px;}
+  .acct-stats{margin-top:14px; padding-top:13px; gap:6px;}
+  .acct-stat{padding:6px 11px; font-size:12.5px;}
+
+  /* 하단 탭 (5개) */
+  .gtab{padding:8px 2px 10px; gap:2px;}
+  .gtab-mk{font-size:19px;}
+
+  /* 모드 세그먼트·풀이 지면 (기존 유지) */
+  .modes{margin:0 -16px 20px; padding:8px 16px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;}
   .mode-btn{flex:1 0 auto; padding:10px 12px 12px;}
   .grid{grid-template-columns:1fr;}
   .duo{grid-template-columns:1fr;}
@@ -800,7 +854,6 @@ body{padding-bottom:84px;} /* 하단 탭 자리 */
   .scene{gap:12px; padding:36px 0;}
   .scene-title,.rp h2{font-size:23px;}
   .rp p,.scene-body p,.fl-b p{font-size:16px;}
-  .home-hero h1{font-size:31px;}
 }
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important; animation:none !important;}

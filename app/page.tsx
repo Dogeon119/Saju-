@@ -18,7 +18,7 @@ export default function HomePage() {
         <p>진태양시·절기 기반 만세력으로, 오늘 하루의 운부터 평생의 사주까지 감정서로 펼쳐 드려요.</p>
       </section>
       <HomeGreeting />
-      <nav className="mode-list stagger" aria-label="풀이 모드">
+      <nav className="mode-list mode-grid stagger" aria-label="풀이 모드">
         {MODES.map(m => (
           <Link key={m.href} href={m.href} className="mode-row">
             <span className="mk">{m.mk}</span>
