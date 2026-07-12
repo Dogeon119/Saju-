@@ -4,6 +4,7 @@ import { HOURS } from "@/lib/engine/constants";
 import { analyzePerson, type Sex } from "@/lib/engine/analyze";
 import { renderReport, type Mode } from "@/lib/engine/modes";
 import { REL_STATUS, REL_GAP, JOB_STATUS } from "@/content/deep";
+import SceneReader from "./SceneReader";
 
 const SUBMIT_LABEL: Record<Mode, string> = {
   saju: "정통사주 감정 보기",
@@ -242,20 +243,20 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
 
       {html && (
         <div id="result" ref={resultRef} style={{ display: "block" }}>
-          <div dangerouslySetInnerHTML={{ __html: html }} />
+          <SceneReader html={html} />
 
           <div className="ai-sec">
             {!ai && !aiBusy && (
-              <button className="submit" type="button" onClick={onAiReading}>
-                ✦ AI 심층 풀이 받기
+              <button className="ghost-btn" type="button" onClick={onAiReading}>
+                AI 심층 풀이 받기
               </button>
             )}
-            {aiBusy && !ai && <p className="ai-wait">월하가 사주를 깊이 들여다보는 중이에요… 🌙</p>}
+            {aiBusy && !ai && <p className="ai-wait">월하가 사주를 깊이 들여다보고 있어요. 풀이를 준비하고 있어요.</p>}
             {ai && (
-              <div className="rp ai-rp">
-                <h2><span className="no">특별장</span>AI 심층 풀이</h2>
+              <div className="ai-rp">
+                <h2 className="scene-title">AI 심층 풀이</h2>
                 <AiText text={ai} />
-                {aiBusy && <p className="ai-wait">…계속 적는 중이에요</p>}
+                {aiBusy && <p className="ai-wait">계속 적는 중이에요</p>}
               </div>
             )}
             {aiErr && <p className="err" style={{ display: "block" }}>{aiErr}</p>}
@@ -263,14 +264,14 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
 
           <button className="again" type="button"
             onClick={() => { setHtml(""); setAi(""); setAiErr(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
-            ↺ 다시 풀이하기
+            다시 풀이하기
           </button>
         </div>
       )}
 
       <p className="disclaimer">
         본 풀이는 전통 명리학의 틀을 빌린 재미와 성찰을 위한 콘텐츠입니다.<br />
-        인생의 진짜 주인은 사주가 아니라 오늘의 당신입니다. 🌙
+        인생의 진짜 주인은 사주가 아니라 오늘의 당신입니다.
       </p>
       <p className="powered">만세력 계산: ssaju 엔진 (진태양시·절기 기반) · 시진 경계는 한국 표준(동경시 보정 +30분)을 따릅니다</p>
     </>

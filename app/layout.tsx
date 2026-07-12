@@ -1,18 +1,27 @@
 import type { Metadata } from "next";
+import { Noto_Serif_KR } from "next/font/google";
 import "./globals.css";
+
+/* DESIGN.md §2 — 명조는 Noto Serif KR 셀프호스팅, weight 400·600만 */
+const serif = Noto_Serif_KR({
+  weight: ["400", "600"],
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
-    default: "월하 사주 — 연애·궁합·결혼·인연 예보",
+    default: "월하 사주 — 정통사주·연애비책·사주궁합·올해의운세",
     template: "%s | 월하 사주",
   },
   description:
-    "맑은 달빛 아래, 당신의 인연을 조곤조곤 읽어 드립니다. 진태양시·절기 기반 만세력으로 연애운·궁합·인연 예보·결혼운·오늘의 연애를 풀이합니다.",
+    "어두운 흑단 위에 금박으로 눌러 쓴, 달빛 아래의 감정서. 진태양시·절기 기반 만세력으로 정통사주·연애비책·사주궁합·올해의운세를 풀이합니다.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={serif.variable}>
       <body>{children}</body>
     </html>
   );
