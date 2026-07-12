@@ -1,9 +1,13 @@
 "use client";
-import { useRef, useState } from "react";
-import { HOURS } from "@/lib/engine/constants";
-import { analyzePerson, type Sex } from "@/lib/engine/analyze";
+import { useEffect, useRef, useState } from "react";
+import { analyzePerson } from "@/lib/engine/analyze";
 import { renderReport, type Mode } from "@/lib/engine/modes";
 import { REL_STATUS, REL_GAP, JOB_STATUS } from "@/content/deep";
+import { supabaseBrowser } from "@/lib/db/browser";
+import {
+  PersonFields, emptyForm, validDate, personPayload, profileToForm,
+  type FormState, type ProfileRow,
+} from "./person-form";
 import SceneReader from "./SceneReader";
 
 const SUBMIT_LABEL: Record<Mode, string> = {
@@ -12,89 +16,6 @@ const SUBMIT_LABEL: Record<Mode, string> = {
   gunghap: "사주궁합 풀이 보기",
   yearly: "올해의 운세 보기",
 };
-
-type Calendar = "solar" | "lunar" | "lunar-leap";
-interface FormState { name: string; sex: Sex; cal: Calendar; y: number; m: number; d: number; hourIdx: number; }
-const emptyForm = (sex: Sex): FormState => ({ name: "", sex, cal: "solar", y: 0, m: 0, d: 0, hourIdx: -1 });
-
-const YEARS = Array.from({ length: 2012 - 1930 + 1 }, (_, i) => 2012 - i);
-const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
-const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
-
-function validDate(f: FormState): string | null {
-  if (!f.y || !f.m || !f.d) return "생년월일을 선택해 주세요.";
-  if (f.cal === "solar") {
-    const dt = new Date(f.y, f.m - 1, f.d);
-    if (dt.getMonth() !== f.m - 1 || dt.getDate() !== f.d) return `${f.m}월에는 ${f.d}일이 없습니다. 날짜를 확인해 주세요.`;
-  } else if (f.d > 30) {
-    return "음력은 30일까지만 있습니다. 날짜를 확인해 주세요.";
-  }
-  return null;
-}
-
-function PersonFields({ legend, form, setForm, idPrefix }: {
-  legend: string;
-  form: FormState;
-  setForm: (f: FormState) => void;
-  idPrefix: string;
-}) {
-  return (
-    <fieldset>
-      <legend>{legend}</legend>
-      <div className="grid">
-        <div className="field">
-          <label htmlFor={`${idPrefix}-name`}>이름</label>
-          <input id={`${idPrefix}-name`} type="text" placeholder="이름 또는 별칭" autoComplete="off"
-            value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-        </div>
-        <div className="field">
-          <span className="field-label">성별</span>
-          <div className="seg" role="group" aria-label="성별">
-            {([["F", "여성"], ["M", "남성"]] as [Sex, string][]).map(([v, t]) => (
-              <button key={v} type="button" aria-pressed={form.sex === v}
-                className={`seg-btn${form.sex === v ? " on" : ""}`}
-                onClick={() => setForm({ ...form, sex: v })}>{t}</button>
-            ))}
-          </div>
-        </div>
-        <div className="field full">
-          <span className="field-label">생년월일</span>
-          <div className="seg" role="group" aria-label="양력/음력">
-            {([["solar", "양력"], ["lunar", "음력"], ["lunar-leap", "음력(윤달)"]] as [Calendar, string][]).map(([v, t]) => (
-              <button key={v} type="button" aria-pressed={form.cal === v}
-                className={`seg-btn${form.cal === v ? " on" : ""}`}
-                onClick={() => setForm({ ...form, cal: v })}>{t}</button>
-            ))}
-          </div>
-          <div className="dob-row">
-            <select id={`${idPrefix}-y`} aria-label="년" value={form.y}
-              onChange={e => setForm({ ...form, y: Number(e.target.value) })}>
-              <option value={0}>년</option>
-              {YEARS.map(y => <option key={y} value={y}>{y}년</option>)}
-            </select>
-            <select id={`${idPrefix}-m`} aria-label="월" value={form.m}
-              onChange={e => setForm({ ...form, m: Number(e.target.value) })}>
-              <option value={0}>월</option>
-              {MONTHS.map(m => <option key={m} value={m}>{m}월</option>)}
-            </select>
-            <select id={`${idPrefix}-d`} aria-label="일" value={form.d}
-              onChange={e => setForm({ ...form, d: Number(e.target.value) })}>
-              <option value={0}>일</option>
-              {DAYS.map(d => <option key={d} value={d}>{d}일</option>)}
-            </select>
-          </div>
-        </div>
-        <div className="field full">
-          <label htmlFor={`${idPrefix}-hour`}>태어난 시간 (시진)</label>
-          <select id={`${idPrefix}-hour`} value={form.hourIdx}
-            onChange={e => setForm({ ...form, hourIdx: Number(e.target.value) })}>
-            {HOURS.map((h, i) => <option key={h} value={i - 1}>{h}</option>)}
-          </select>
-        </div>
-      </div>
-    </fieldset>
-  );
-}
 
 /** AI 스트리밍 출력 — 마크다운 소제목(##)만 가볍게 살려 텍스트로 렌더 (HTML 주입 없음) */
 function AiText({ text }: { text: string }) {
@@ -125,17 +46,35 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
   const [shareBusy, setShareBusy] = useState(false);
   const [shareErr, setShareErr] = useState("");
   const [copied, setCopied] = useState(false);
+  const [prefilled, setPrefilled] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const askRel = mode === "love" || mode === "gunghap";
 
+  /* 로그인 + 프로필 저장 유저는 생일을 다시 입력하지 않는다 (비어 있을 때만 자동 채움) */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const sb = supabaseBrowser();
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session || cancelled) return;
+        const { data } = await sb.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+        if (!data || cancelled) return;
+        const p = data as ProfileRow;
+        if (!p.year || !p.month || !p.day) return;
+        setFormA(f => {
+          if (f.y || f.name) return f; // 이미 입력 중이면 건드리지 않는다
+          setPrefilled(true);
+          return profileToForm(p);
+        });
+      } catch { /* 게스트 흐름은 그대로 */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const toPerson = (f: FormState, fallbackName: string) =>
-    analyzePerson({
-      name: f.name, sex: f.sex, year: f.y, month: f.m, day: f.d, hourIdx: f.hourIdx,
-      calendar: f.cal === "solar" ? "solar" : "lunar",
-      leap: f.cal === "lunar-leap",
-      fallbackName,
-    });
+    analyzePerson({ ...personPayload(f), fallbackName });
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,19 +98,19 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
     }
   };
 
-  const personPayload = (f: FormState) => ({
-    name: f.name, sex: f.sex, year: f.y, month: f.m, day: f.d, hourIdx: f.hourIdx,
-    calendar: f.cal === "solar" ? "solar" : "lunar",
-    leap: f.cal === "lunar-leap",
-  });
-
   const onShare = async () => {
     if (shareBusy) return;
     setShareBusy(true); setShareErr(""); setCopied(false);
     try {
+      // 로그인 상태면 감정서를 계정 히스토리에 함께 묶는다
+      let auth: Record<string, string> = {};
+      try {
+        const { data: { session } } = await supabaseBrowser().auth.getSession();
+        if (session) auth = { Authorization: `Bearer ${session.access_token}` };
+      } catch { /* 게스트 저장 */ }
       const res = await fetch("/api/reading", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...auth },
         body: JSON.stringify({
           mode,
           me: personPayload(formA),
@@ -231,6 +170,7 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
   return (
     <>
       <form onSubmit={onSubmit} noValidate>
+        {prefilled && <p className="form-hint">내 서재의 사주 프로필로 채워 뒀어요. 수정해도 프로필은 바뀌지 않아요.</p>}
         <PersonFields legend="나의 정보" form={formA} setForm={setFormA} idPrefix="a" />
         {mode === "gunghap" && (
           <PersonFields legend="상대의 정보" form={formB} setForm={setFormB} idPrefix="b" />

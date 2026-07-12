@@ -46,8 +46,14 @@ body{
 .wrap{max-width:680px; margin:0 auto; padding:48px 24px 120px; box-sizing:border-box;}
 
 /* ── 헤더 — 라지 타이틀 ── */
-header{margin-bottom:40px;}
-header a{display:flex; align-items:center; gap:14px; text-decoration:none; color:inherit;}
+header{margin-bottom:40px; display:flex; align-items:center; justify-content:space-between; gap:16px;}
+.brand{display:flex; align-items:center; gap:14px; text-decoration:none; color:inherit;}
+.head-link{
+  font-family:var(--sans); font-size:13px; font-weight:600; color:var(--paper-dim);
+  text-decoration:none; border:1px solid var(--line-strong); border-radius:var(--r-ctl);
+  padding:9px 16px; transition:background .15s, color .15s; white-space:nowrap;
+}
+.head-link:hover{background:var(--ink-2); color:var(--paper);}
 .logo{color:var(--gold); display:block; flex:none;}
 .brand-name{
   font-family:var(--serif); font-weight:600; font-size:22px; letter-spacing:.12em;
@@ -342,6 +348,20 @@ ul.pts.blue li::before{background:var(--line-strong);}
   color:var(--paper); border-radius:var(--r-ctl); padding:12px 32px; cursor:pointer; font-size:14px; font-weight:600; font-family:var(--sans);}
 .again:hover{background:var(--ink-2);}
 .powered{color:var(--paper-dim); font-size:12px; margin-top:12px;}
+
+/* ══ 내 서재 ══ */
+.auth-seg{margin-bottom:20px;}
+.notice{color:var(--gold-dim); font-size:13.5px; margin-top:14px; line-height:1.8; font-family:var(--sans);}
+.acct-row{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  background:var(--ink-1); border:1px solid var(--line); border-radius:var(--r-group);
+  padding:20px; margin-bottom:24px;
+}
+.acct-email{font-size:15px; font-weight:600; color:var(--paper); margin:0; font-family:var(--sans); word-break:break-all;}
+.acct-sub{font-size:12px; color:var(--paper-dim); margin:4px 0 0; font-family:var(--sans);}
+.acct-out{width:auto; padding:0 20px; height:40px; flex:none;}
+.acct-h{font-family:var(--serif); font-size:20px; font-weight:600; letter-spacing:.04em; color:var(--paper); margin:40px 0 16px;}
+.acct-empty{color:var(--paper-dim); font-size:14px; line-height:1.85; font-family:var(--sans);}
 
 /* ══ 공유 ══ */
 .share-sec{margin:40px 0 0;}

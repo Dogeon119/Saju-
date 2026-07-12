@@ -47,10 +47,19 @@ export async function POST(req: Request) {
   };
 
   const db = supabaseAdmin();
+
+  // 로그인 유저면 감정서를 계정에 묶는다 (토큰은 서버에서 검증 — 클라이언트 주장 불신)
+  let userId: string | null = null;
+  const bearer = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  if (bearer) {
+    const { data } = await db.auth.getUser(bearer);
+    userId = data.user?.id ?? null;
+  }
+
   // share_id 충돌은 사실상 없지만(64bit) 유니크 제약 위반 시 1회 재시도
   for (let attempt = 0; attempt < 2; attempt++) {
     const shareId = newShareId();
-    const { error } = await db.from("readings").insert({ share_id: shareId, mode, payload });
+    const { error } = await db.from("readings").insert({ share_id: shareId, mode, payload, user_id: userId });
     if (!error) return Response.json({ shareId, path: `/r/${shareId}` });
     if (error.code !== "23505") return err(500, "저장에 실패했어요. 잠시 뒤 다시 시도해 주세요.");
   }
