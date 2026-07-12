@@ -417,6 +417,20 @@ ul.pts.blue li::before{background:var(--line-strong);}
 
 /* ══ 내 서재 · 회원 ══ */
 .auth-seg{margin-bottom:20px;}
+.gz-inline{font-family:var(--serif); color:var(--gold); letter-spacing:.06em;}
+.lib-bar{margin:0 0 16px;}
+.lib-count{font-size:14.5px; color:var(--paper-dim); margin:0 0 12px; font-family:var(--sans);}
+.lib-count b{color:var(--paper); font-weight:600;}
+.fchips{display:flex; gap:6px; flex-wrap:wrap;}
+.fchip{
+  border:1px solid var(--line-strong); background:var(--ink-1); color:var(--paper-dim);
+  padding:8px 14px; font-size:13.5px; font-family:var(--sans); cursor:pointer; border-radius:0;
+  transition:color .15s, border-color .15s, background .15s, transform .12s;
+}
+.fchip:hover{color:var(--paper); background:var(--ink-2);}
+.fchip:active{transform:scale(.97);}
+.fchip.on{border-color:var(--gold-dim); color:var(--gold); background:var(--ink-2);}
+.fchip:focus-visible{outline:2px solid var(--gold-dim); outline-offset:2px;}
 .notice{color:var(--gold-dim); font-size:13.5px; margin-top:14px; line-height:1.8; font-family:var(--sans);}
 .acct-h{font-family:var(--serif); font-size:20px; font-weight:600; letter-spacing:.04em; color:var(--paper); margin:40px 0 16px;}
 .acct-empty{color:var(--paper-dim); font-size:14px; line-height:1.85; font-family:var(--sans);}

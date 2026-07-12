@@ -10,6 +10,7 @@ const MODE_TITLE: Record<string, string> = {
 const MODE_MK: Record<string, string> = {
   saju: "命", love: "戀", gunghap: "緣", yearly: "歲", daily: "日", manse: "曆",
 };
+const MODE_ORDER = ["saju", "love", "gunghap", "yearly", "daily", "manse"];
 
 interface HistRow { share_id: string; mode: string; created_at: string; }
 
@@ -18,10 +19,11 @@ function fmtDate(iso: string): string {
   return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
 }
 
-/** 서재 — 내가 만든 감정서 보관함 */
+/** 서재 — 내가 만든 감정서 보관함 (모드 필터 + 권수) */
 export default function LibraryApp() {
   const [state, setState] = useState<"loading" | "anon" | "ok">("loading");
   const [hist, setHist] = useState<HistRow[]>([]);
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     (async () => {
@@ -48,6 +50,9 @@ export default function LibraryApp() {
     );
   }
 
+  const shown = hist.filter(h => filter === "all" || h.mode === filter);
+  const usedModes = MODE_ORDER.filter(m => hist.some(h => h.mode === m));
+
   return (
     <>
       {hist.length === 0 && (
@@ -57,18 +62,36 @@ export default function LibraryApp() {
         </p>
       )}
       {hist.length > 0 && (
-        <div className="mode-list">
-          {hist.map(h => (
-            <Link key={h.share_id} href={`/r/${h.share_id}`} className="mode-row">
-              <span className="mk">{MODE_MK[h.mode] ?? "命"}</span>
-              <span>
-                <span className="mt">{MODE_TITLE[h.mode] ?? h.mode} 감정서</span>
-                <span className="md">{fmtDate(h.created_at)}</span>
-              </span>
-              <span className="chev" aria-hidden="true">›</span>
-            </Link>
-          ))}
-        </div>
+        <>
+          <div className="lib-bar">
+            <p className="lib-count">모두 <b>{hist.length}권</b>{filter !== "all" ? ` · ${MODE_TITLE[filter]} ${shown.length}권` : ""}</p>
+            {usedModes.length > 1 && (
+              <div className="fchips" role="group" aria-label="모드 필터">
+                <button type="button" className={`fchip${filter === "all" ? " on" : ""}`}
+                  onClick={() => setFilter("all")}>전체</button>
+                {usedModes.map(m => (
+                  <button key={m} type="button" className={`fchip${filter === m ? " on" : ""}`}
+                    onClick={() => setFilter(m)}>{MODE_MK[m]} {MODE_TITLE[m]}</button>
+                ))}
+              </div>
+            )}
+          </div>
+          {shown.length === 0 && <p className="acct-empty">이 모드의 감정서는 아직 없어요.</p>}
+          {shown.length > 0 && (
+            <div className="mode-list stagger">
+              {shown.map(h => (
+                <Link key={h.share_id} href={`/r/${h.share_id}`} className="mode-row">
+                  <span className="mk">{MODE_MK[h.mode] ?? "命"}</span>
+                  <span>
+                    <span className="mt">{MODE_TITLE[h.mode] ?? h.mode} 감정서</span>
+                    <span className="md">{fmtDate(h.created_at)}</span>
+                  </span>
+                  <span className="chev" aria-hidden="true">›</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </>
   );

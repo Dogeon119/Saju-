@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { analyzePerson } from "@/lib/engine/analyze";
 import { renderReport, type Mode } from "@/lib/engine/modes";
 import { REL_STATUS, REL_GAP, JOB_STATUS } from "@/content/deep";
@@ -53,6 +54,7 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
   const [inviteErr, setInviteErr] = useState("");
   const [inviteCopied, setInviteCopied] = useState(false);
   const [prefilled, setPrefilled] = useState(false);
+  const [member, setMember] = useState(true); // 확인 전엔 유도 카드를 숨긴다
   const resultRef = useRef<HTMLDivElement>(null);
   const dirtyA = useRef(false); // 유저가 직접 입력을 시작했는지
 
@@ -93,7 +95,9 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
       try {
         const sb = supabaseBrowser();
         const { data: { session } } = await sb.auth.getSession();
-        if (!session || cancelled) return;
+        if (cancelled) return;
+        setMember(!!session);
+        if (!session) return;
         const { data } = await sb.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
         if (!data || cancelled || dirtyA.current) return;
         const p = data as ProfileRow;
@@ -296,6 +300,19 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
             )}
             {shareErr && <p className="err" style={{ display: "block" }}>{shareErr}</p>}
           </div>
+
+          {!member && (
+            <nav className="mode-list" aria-label="회원 안내" style={{ marginTop: 24 }}>
+              <Link href="/account" className="mode-row">
+                <span className="mk">人</span>
+                <span>
+                  <span className="mt">이 감정서, 서재에 두고 보실래요?</span>
+                  <span className="md">회원이 되면 감정서가 서재에 모이고, 사주 프로필로 매일 오늘의 운세가 준비돼요.</span>
+                </span>
+                <span className="chev" aria-hidden="true">›</span>
+              </Link>
+            </nav>
+          )}
 
           <div className="ai-sec" style={mode === "manse" ? { display: "none" } : undefined}>
             {!ai && !aiBusy && (
