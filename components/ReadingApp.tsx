@@ -46,6 +46,10 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
   const [shareBusy, setShareBusy] = useState(false);
   const [shareErr, setShareErr] = useState("");
   const [copied, setCopied] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState("");
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteErr, setInviteErr] = useState("");
+  const [inviteCopied, setInviteCopied] = useState(false);
   const [prefilled, setPrefilled] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -133,6 +137,30 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
     }
   };
 
+  const onInvite = async () => {
+    if (inviteBusy) return;
+    setInviteErr(""); setInviteCopied(false);
+    const errA = validDate(formA);
+    if (errA) { setInviteErr("나의 정보: " + errA); return; }
+    setInviteBusy(true);
+    try {
+      const res = await fetch("/api/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ me: personPayload(formA), relStatus, relGap }),
+      });
+      const j = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(j?.error || `요청 실패 (${res.status})`);
+      const url = `${window.location.origin}${j.path}`;
+      setInviteUrl(url);
+      try { await navigator.clipboard.writeText(url); setInviteCopied(true); } catch { /* 표시만 */ }
+    } catch (ex) {
+      setInviteErr(ex instanceof Error ? ex.message : String(ex));
+    } finally {
+      setInviteBusy(false);
+    }
+  };
+
   const onAiReading = async () => {
     if (aiBusy) return;
     setAiBusy(true); setAi(""); setAiErr("");
@@ -216,6 +244,26 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
 
         <button className="submit" type="submit">{SUBMIT_LABEL[mode]}</button>
         {err && <p className="err" style={{ display: "block" }}>{err}</p>}
+
+        {mode === "gunghap" && (
+          <div className="invite-sec">
+            <p className="form-hint">
+              상대의 생년월일을 모르세요? 나의 정보만 채우고 초대 링크를 보내면, 상대가 자기 생일을 입력하는 순간 궁합이 펼쳐져요.
+            </p>
+            {!inviteUrl && (
+              <button className="ghost-btn" type="button" onClick={onInvite} disabled={inviteBusy}>
+                {inviteBusy ? "초대장을 만드는 중이에요" : "상대에게 보낼 초대 링크 만들기"}
+              </button>
+            )}
+            {inviteUrl && (
+              <div className="share-done">
+                <p className="share-note">{inviteCopied ? "초대 링크를 복사했어요. 상대에게 보내 보세요." : "아래 초대 링크를 복사해서 보내 보세요."}</p>
+                <p className="share-link">{inviteUrl}</p>
+              </div>
+            )}
+            {inviteErr && <p className="err" style={{ display: "block" }}>{inviteErr}</p>}
+          </div>
+        )}
       </form>
 
       {html && (
