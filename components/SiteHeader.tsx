@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
+import ThemeToggle from "./ThemeToggle";
 
 export default function SiteHeader() {
   return (
@@ -10,7 +11,10 @@ export default function SiteHeader() {
           <span className="hanja">月 下</span>월하 사주
         </span>
       </Link>
-      <Link href="/account" className="head-link">내 서재</Link>
+      <span className="head-actions">
+        <ThemeToggle />
+        <Link href="/account" className="head-link">내 서재</Link>
+      </span>
     </header>
   );
 }

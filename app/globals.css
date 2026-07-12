@@ -1,33 +1,34 @@
 @import "tailwindcss";
 
 /* ══════════════════════════════════════════════════════════════
-   월하(月下) — 흑단(黑檀) 디자인 시스템 v1.1 애플 그레이드 (DESIGN.md)
-   모든 색은 아래 토큰만 사용한다. 토큰 외 hex 금지 (DESIGN.md §1·§7)
+   월하(月下) 디자인 시스템 (DESIGN.md)
+   기본 = 한지(韓紙) 밝은 모드 · [data-theme=dark] = 흑단(黑檀)
+   모든 색은 아래 토큰만 사용한다. 토큰 외 hex 금지 (§1·§7)
    ══════════════════════════════════════════════════════════════ */
 :root{
-  /* 지면 (紙面) */
-  --ink-0:#0E0D0C;
-  --ink-1:#131211;
-  --ink-2:#1C1A17;
-  --ink-3:#262320;
+  /* 지면 (紙面) — 한지 미색 */
+  --ink-0:#F4EFE4;
+  --ink-1:#FAF6EC;
+  --ink-2:#EEE7D6;
+  --ink-3:#E3DAC4;
   /* 괘선 (罫線) */
-  --line:#2E2A24;
-  --line-strong:#3C372F;
-  /* 금박 (金箔) — 유일한 액센트 */
-  --gold:#C9B37E;
-  --gold-dim:#8C7C58;
-  /* 한지 (韓紙) — 글자 */
-  --paper:#E9E2D3;
-  --paper-dim:#8F8A80;
+  --line:#DED4BD;
+  --line-strong:#C9BC9E;
+  /* 금박 (金箔) — 밝은 지면용 심금 */
+  --gold:#8A7448;
+  --gold-dim:#A2946F;
+  /* 먹 — 글자 */
+  --paper:#2E2A23;
+  --paper-dim:#7A7263;
   /* 낙관 (落款) — 도장 전용 */
-  --nakgwan:#8F3B32;
-  --nakgwan-text:#B0574C;
-  /* 오행 5색 — 채도 억제판 */
-  --e-mok:#7FA07A;
-  --e-hwa:#C06B5A;
-  --e-to:#C2A368;
-  --e-geum:#B9BCB6;
-  --e-su:#7392A8;
+  --nakgwan:#96453A;
+  --nakgwan-text:#8F3B32;
+  /* 오행 5색 — 밝은 지면 억제판 */
+  --e-mok:#4E7A48;
+  --e-hwa:#A84A38;
+  --e-to:#8A6C34;
+  --e-geum:#6E7570;
+  --e-su:#3E6178;
   /* 폰트 */
   --serif:var(--font-serif),"Noto Serif KR","Batang",serif;
   --sans:-apple-system,BlinkMacSystemFont,"Pretendard","Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
@@ -35,6 +36,27 @@
   --r-ctl:10px;   /* 버튼·입력·세그먼트 */
   --r-card:12px;  /* 데이터 카드 */
   --r-group:16px; /* 그룹 카드(폼·리스트) */
+}
+
+/* 흑단(黑檀) — 어두운 모드 (DESIGN.md §1 원본 값) */
+:root[data-theme="dark"]{
+  --ink-0:#0E0D0C;
+  --ink-1:#131211;
+  --ink-2:#1C1A17;
+  --ink-3:#262320;
+  --line:#2E2A24;
+  --line-strong:#3C372F;
+  --gold:#C9B37E;
+  --gold-dim:#8C7C58;
+  --paper:#E9E2D3;
+  --paper-dim:#8F8A80;
+  --nakgwan:#8F3B32;
+  --nakgwan-text:#B0574C;
+  --e-mok:#7FA07A;
+  --e-hwa:#C06B5A;
+  --e-to:#C2A368;
+  --e-geum:#B9BCB6;
+  --e-su:#7392A8;
 }
 
 html{background:var(--ink-0); scroll-behavior:smooth;}
@@ -48,10 +70,12 @@ body{
 /* ── 헤더 — 라지 타이틀 ── */
 header{margin-bottom:40px; display:flex; align-items:center; justify-content:space-between; gap:16px;}
 .brand{display:flex; align-items:center; gap:14px; text-decoration:none; color:inherit;}
+.head-actions{display:flex; gap:8px; align-items:center;}
 .head-link{
   font-family:var(--sans); font-size:13px; font-weight:600; color:var(--paper-dim);
   text-decoration:none; border:1px solid var(--line-strong); border-radius:var(--r-ctl);
   padding:9px 16px; transition:background .15s, color .15s; white-space:nowrap;
+  background:transparent; cursor:pointer;
 }
 .head-link:hover{background:var(--ink-2); color:var(--paper);}
 .logo{color:var(--gold); display:block; flex:none;}
