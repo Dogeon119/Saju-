@@ -92,6 +92,20 @@ function PersonFields({ legend, form, setForm, idPrefix }: {
   );
 }
 
+/** AI 스트리밍 출력 — 마크다운 소제목(##)만 가볍게 살려 텍스트로 렌더 (HTML 주입 없음) */
+function AiText({ text }: { text: string }) {
+  return (
+    <>
+      {text.split("\n").map((line, i) => {
+        const h = line.match(/^#{2,4}\s+(.*)/);
+        if (h) return <h3 key={i} className="ai-h">{h[1]}</h3>;
+        if (!line.trim()) return null;
+        return <p key={i}>{line.replace(/\*\*/g, "")}</p>;
+      })}
+    </>
+  );
+}
+
 export default function ReadingApp({ mode }: { mode: Mode }) {
   const [formA, setFormA] = useState<FormState>(() => emptyForm("F"));
   const [formB, setFormB] = useState<FormState>(() => emptyForm("M"));
@@ -100,6 +114,9 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
   const [job, setJob] = useState<string>(JOB_STATUS[0]);
   const [html, setHtml] = useState("");
   const [err, setErr] = useState("");
+  const [ai, setAi] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiErr, setAiErr] = useState("");
   const resultRef = useRef<HTMLDivElement>(null);
 
   const askRel = mode === "love" || mode === "gunghap";
@@ -126,9 +143,50 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
         B = toPerson(formB, "상대");
       }
       setHtml(renderReport(mode, A, { B, relStatus, relGap, job }));
+      setAi(""); setAiErr("");
       requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
     } catch (ex) {
       setErr("풀이 중 오류가 났습니다: " + (ex instanceof Error ? ex.message : String(ex)));
+    }
+  };
+
+  const personPayload = (f: FormState) => ({
+    name: f.name, sex: f.sex, year: f.y, month: f.m, day: f.d, hourIdx: f.hourIdx,
+    calendar: f.cal === "solar" ? "solar" : "lunar",
+    leap: f.cal === "lunar-leap",
+  });
+
+  const onAiReading = async () => {
+    if (aiBusy) return;
+    setAiBusy(true); setAi(""); setAiErr("");
+    try {
+      const res = await fetch("/api/ai-reading", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode,
+          me: personPayload(formA),
+          partner: mode === "gunghap" ? personPayload(formB) : undefined,
+          relStatus, relGap, job,
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => null);
+        throw new Error(j?.error || `요청 실패 (${res.status})`);
+      }
+      if (!res.body) throw new Error("스트리밍을 지원하지 않는 환경이에요.");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        if (chunk) setAi(prev => prev + chunk);
+      }
+    } catch (ex) {
+      setAiErr(ex instanceof Error ? ex.message : String(ex));
+    } finally {
+      setAiBusy(false);
     }
   };
 
@@ -185,8 +243,26 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
       {html && (
         <div id="result" ref={resultRef} style={{ display: "block" }}>
           <div dangerouslySetInnerHTML={{ __html: html }} />
+
+          <div className="ai-sec">
+            {!ai && !aiBusy && (
+              <button className="submit" type="button" onClick={onAiReading}>
+                ✦ AI 심층 풀이 받기
+              </button>
+            )}
+            {aiBusy && !ai && <p className="ai-wait">월하가 사주를 깊이 들여다보는 중이에요… 🌙</p>}
+            {ai && (
+              <div className="rp ai-rp">
+                <h2><span className="no">특별장</span>AI 심층 풀이</h2>
+                <AiText text={ai} />
+                {aiBusy && <p className="ai-wait">…계속 적는 중이에요</p>}
+              </div>
+            )}
+            {aiErr && <p className="err" style={{ display: "block" }}>{aiErr}</p>}
+          </div>
+
           <button className="again" type="button"
-            onClick={() => { setHtml(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+            onClick={() => { setHtml(""); setAi(""); setAiErr(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
             ↺ 다시 풀이하기
           </button>
         </div>

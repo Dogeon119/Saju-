@@ -329,3 +329,13 @@ ul.pts li{font-size:16.5px; line-height:2; margin-bottom:12px; max-width:58ch;}
   .rp p,.fl-b p,ul.pts li{font-size:16px;}
   .rp h2{font-size:21px;}
 }
+
+/* ══ AI 심층 풀이 (Phase 3 스파이크) ══ */
+.ai-sec{margin:34px 0 8px;}
+.ai-sec>.submit{margin-top:0;}
+.ai-wait{text-align:center; color:var(--mut); font-size:15px; margin:18px 0; line-height:1.9;}
+.ai-rp .ai-h{font-size:17px; margin:30px 0 12px; padding-bottom:10px;
+  border-bottom:2px solid var(--cheong-pale); color:var(--cheong-deep);
+  font-family:var(--serif); letter-spacing:.02em; font-weight:700;}
+.ai-rp .ai-h::before{content:'✦ '; color:var(--cheong); font-size:13px;}
+.ai-rp p{font-size:17px; line-height:2.05; margin:0 0 18px; max-width:58ch;}

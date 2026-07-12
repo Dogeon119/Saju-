@@ -174,7 +174,7 @@
 │   │   └── Postgres (위 스키마)
 │   └── Secrets (Vercel 환경변수)
 │       ├── NEXT_PUBLIC_SUPABASE_URL / ANON_KEY · SUPABASE_SERVICE_ROLE_KEY
-│       ├── NVIDIA_API_KEY (Phase 3 — Claude 전환 시 ANTHROPIC_API_KEY)
+│       ├── NIM_API_KEY (Phase 3 — Claude 전환 시 ANTHROPIC_API_KEY)
 │       └── TOSS_SECRET_KEY (Phase 4)
 │
 └── 📄 문서·설정
@@ -220,9 +220,10 @@
 - [ ] **프로바이더: 1차 NVIDIA NIM 무료** (build.nvidia.com, OpenAI 호환 API — 가입 크레딧 1,000개, 포럼 신청 시 최대 5,000개, 40 RPM). 무료 티어는 약관상 개발·검증용 → 실서비스 전환 시 `client.ts`의 baseURL·키만 교체
 - [ ] **모델 확정: `openai/gpt-oss-120b`** (OpenAI 오픈 모델, NVIDIA 클라우드 서빙 — 로컬 GPU 불필요). 비중국계 조건 충족 (Qwen·DeepSeek·Kimi·GLM 사용 금지). 한국어 품질 예비 후보: Llama 3.3 70B, 미달 시 Claude API 전환
 - [ ] **분량 목표: 사주 1건당 최대 ~60,000자** — 단일 호출로는 불가능하므로 **장(章)별 분할 생성 파이프라인**: 모드 목차(13/7/8/8장) 기준 장마다 1호출(장당 4,000~5,000자), 순차 스트리밍으로 이어 붙이기 + 장별 재시도
-- [ ] `/api/ai-reading` LLM 프록시 스트리밍 (기본 풀이 하단 "AI 심층 풀이 받기" 버튼)
-- [ ] 프롬프트: ssaju `toMarkdown()` 원국 + 모드별 지침 + 말투 가이드(20대 여성 상담사 해요체) + 기존 정적 풀이 예문 few-shot
-- [ ] 캐싱(동일 사주+모드) + 무료 1일 1회 제한 (크레딧·비용 방어)
+- [x] `/api/ai-reading` LLM 프록시 스트리밍 (기본 풀이 하단 "AI 심층 풀이 받기" 버튼) — 스파이크 구현 2026-07-12, 서버에서 ssaju 재계산(클라이언트 원국 불신)
+- [x] 프롬프트: ssaju `toMarkdown()` 원국 + 모드별 지침 + 말투 가이드(20대 여성 상담사 해요체) + 중복 금지 목록 + 환각 방지 규칙 — `lib/ai/prompt.ts`, 회귀 테스트 7종
+- [ ] 캐싱(동일 사주+모드) + 무료 1일 1회 제한 (크레딧·비용 방어) — 라우트에 TODO 표기
+- [ ] 실사주 4모드 라이브 검증 (NIM_API_KEY 발급 후) — 근거 인용·중복 없음·환각 없음 확인, 번역투면 Llama 4 계열과 비교
 - **DoD**: 기본 풀이와 겹치지 않는 개인 맞춤 장문 풀이(수만 자)가 장 단위로 스트리밍 출력
 
 ### Phase 4 — 유료화
