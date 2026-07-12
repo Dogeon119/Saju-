@@ -66,8 +66,15 @@ body{
   line-height:1.9; font-size:17px; -webkit-font-smoothing:antialiased;
   word-break:keep-all; overflow-wrap:break-word; /* 한국어 단어 중간 꺾임 금지 (부록 G) */
 }
-/* 유동 스케일 — 화면 폭을 따라 부드럽게 (부록 G v2, 640px 절벽 제거) */
-.wrap{max-width:760px; margin:0 auto; padding:clamp(20px,5vw,48px) clamp(16px,3vw,24px) clamp(96px,14vw,120px); box-sizing:border-box;}
+/* 유동 스케일 — 화면 폭을 따라 부드럽게 (부록 G v2, 640px 절벽 제거)
+   좌우는 노치 safe-area와 클램프 중 큰 쪽 */
+.wrap{
+  max-width:760px; margin:0 auto; box-sizing:border-box;
+  padding:clamp(20px,5vw,48px)
+    max(clamp(16px,3vw,24px), env(safe-area-inset-right))
+    clamp(96px,14vw,120px)
+    max(clamp(16px,3vw,24px), env(safe-area-inset-left));
+}
 
 /* ── 헤더 — 라지 타이틀 ── */
 header{margin-bottom:40px; display:flex; align-items:center; justify-content:space-between; gap:16px;}
@@ -526,7 +533,7 @@ body:has(.admin-shell) .gtabs{display:none;}
 .adm2-cardh span{font-size:12.5px; color:#9CA3AF;}
 
 /* 게이트 */
-.adm2-gate{max-width:380px; margin:13vh auto 0; text-align:center; padding:34px 30px;
+.adm2-gate{max-width:380px; margin:13dvh auto 0; text-align:center; padding:34px 30px;
   animation:riseIn .3s cubic-bezier(.22,1,.36,1) both;}
 .adm2-gate .adm2-seal{margin:0 auto 18px; width:52px; height:52px; font-size:25px;}
 .adm2-gate h2{font-size:17px; font-weight:700; margin:0 0 6px; color:#111418;}
@@ -792,7 +799,7 @@ body:has(.admin-shell) .gtabs{display:none;}
 .gtab-mk{font-family:var(--serif); font-size:21px; line-height:1;}
 .gtab-label{font-family:var(--sans); font-size:12.5px; font-weight:600; letter-spacing:.04em;}
 .gtab.on{color:var(--gold); box-shadow:inset 0 2px 0 var(--gold);}
-body{padding-bottom:84px;} /* 하단 탭 자리 */
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom));} /* 하단 탭 + 홈바 자리 */
 
 /* ══ 모바일 압축 스케일 (DESIGN.md 부록 G) — 크기 대부분은 위 clamp() 유동 스케일이 담당,
    여기는 구조가 바뀌는 것만 (그리드 전환·sticky 해제·행 조밀화) ══ */

@@ -317,13 +317,13 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
           <div className="ai-sec" style={mode === "manse" ? { display: "none" } : undefined}>
             {!ai && !aiBusy && (
               <button className="ghost-btn" type="button" onClick={onAiReading}>
-                AI 심층 풀이 받기
+                달토끼의 심층 풀이 듣기
               </button>
             )}
-            {aiBusy && !ai && <p className="ai-wait">월하가 사주를 깊이 들여다보고 있어요. 풀이를 준비하고 있어요.</p>}
+            {aiBusy && !ai && <p className="ai-wait">달토끼가 달에서 당신의 사주를 내려다보고 있어요. 잠시만요.</p>}
             {ai && (
               <div className="ai-rp">
-                <h2 className="scene-title">AI 심층 풀이</h2>
+                <h2 className="scene-title">달토끼의 심층 풀이</h2>
                 <AiText text={ai} />
                 {aiBusy && <p className="ai-wait">계속 적는 중이에요</p>}
               </div>
