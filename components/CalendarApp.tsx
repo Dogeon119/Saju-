@@ -3,15 +3,14 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabaseBrowser } from "@/lib/db/browser";
 import { analyzePerson } from "@/lib/engine/analyze";
-import { buildMonth, matchDay, dayAdvice, type CalDay } from "@/lib/engine/calendar";
-import { gzName } from "@/lib/engine/relations";
+import { buildMonth, matchDay, dayAdvice, dayTags, type CalDay } from "@/lib/engine/calendar";
 import type { ProfileRow } from "./person-form";
 
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
 
 interface Me { name: string; ds: number; db: number; }
 
-/** 운세 달력 — 매일의 일진·절기·손없는날 + 회원은 내 사주 기준 길일·주의일 */
+/** 운세 달력 — 실생활 정보(길일·주의일·이사날·절기) 중심, 간지는 상세의 작은 참고로 */
 export default function CalendarApp() {
   const [today, setToday] = useState<{ y: number; m: number; d: number } | null>(null);
   const [ym, setYm] = useState<{ y: number; m: number } | null>(null);
@@ -64,6 +63,13 @@ export default function CalendarApp() {
   const isToday = (d: number) => ym.y === today.y && ym.m === today.m && d === today.d;
   const selDay = days[sel - 1];
   const selMatch = me && selDay ? matchDay(me.ds, me.db, selDay.gz) : null;
+  const selTags = selDay ? dayTags(selDay, selMatch) : [];
+  const selDow = selDay ? WEEK[(lead + sel - 1) % 7] : "";
+
+  /* 이번 달 한눈에 — 회원은 길일·주의일, 모두에게 이사 좋은 날 */
+  const goodDays = me ? days.filter(d => matchDay(me.ds, me.db, d.gz).grade === "길").map(d => d.d) : [];
+  const warnDays = me ? days.filter(d => matchDay(me.ds, me.db, d.gz).grade === "주의").map(d => d.d) : [];
+  const sonDays = days.filter(d => d.son).map(d => d.d);
 
   return (
     <>
@@ -93,12 +99,14 @@ export default function CalendarApp() {
                 aria-pressed={sel === day.d}
                 onClick={() => setSel(day.d)}>
                 <span className={`cal2-d${dow === 0 ? " sun" : ""}`}>{day.d}</span>
-                <span className="cal2-gz">{day.gz.hj}</span>
+                {day.jeolgi && <span className="cal2-tag term">{day.jeolgi}</span>}
+                {!day.jeolgi && m?.grade === "길" && <span className="cal2-tag good">길일</span>}
+                {!day.jeolgi && m?.grade === "주의" && <span className="cal2-tag warn">주의</span>}
+                {!day.jeolgi && (!m || m.grade === "보통") && day.son && <span className="cal2-tag son">이사</span>}
                 <span className="cal2-marks">
-                  {m?.grade === "길" && <i className="cal2-dot good" aria-label="길일" />}
-                  {m?.grade === "주의" && <i className="cal2-dot warn" aria-label="주의일" />}
-                  {day.jeolgi && <i className="cal2-dot term" aria-label="절기" />}
-                  {day.son && <em className="cal2-son">손</em>}
+                  {day.jeolgi && m?.grade === "길" && <i className="cal2-dot good" aria-label="길일" />}
+                  {day.jeolgi && m?.grade === "주의" && <i className="cal2-dot warn" aria-label="주의일" />}
+                  {day.son && (day.jeolgi || (m && m.grade !== "보통")) && <em className="cal2-son">손</em>}
                 </span>
               </button>
             );
@@ -106,31 +114,42 @@ export default function CalendarApp() {
         </div>
       </div>
 
+      {(goodDays.length > 0 || warnDays.length > 0 || sonDays.length > 0) && (
+        <div className="cal2-sum">
+          {me && goodDays.length > 0 && <p><b className="g">이번 달 좋은 날</b> {goodDays.join(" · ")}일</p>}
+          {me && warnDays.length > 0 && <p><b className="w">조심할 날</b> {warnDays.join(" · ")}일</p>}
+          {sonDays.length > 0 && <p><b>이사·입주 좋은 날 (손없는날)</b> {sonDays.join(" · ")}일</p>}
+        </div>
+      )}
+
       {selDay && (
         <div className="card cal2-detail" key={`${ym.y}-${ym.m}-${sel}`}>
           <p className="cal2-dt">
-            {ym.m}월 {sel}일 — <b className="gz-inline">{gzName(selDay.gz.s, selDay.gz.b)}</b>
+            {ym.m}월 {sel}일 {selDow}요일
+            {selMatch && (
+              <span className={`cal2-grade${selMatch.grade === "길" ? " g" : selMatch.grade === "주의" ? " w" : ""}`}>
+                {me?.name}님에게 {selMatch.grade === "보통" ? "무난한 날" : selMatch.grade === "길" ? "좋은 날" : "조심할 날"}
+              </span>
+            )}
           </p>
-          <p className="cal2-line">{selDay.gz.line} · 음력 {selDay.lunar.m}월 {selDay.lunar.d}일{selDay.lunar.leap ? " (윤달)" : ""}</p>
-          <div className="badges" style={{ margin: "10px 0 0" }}>
-            {selDay.jeolgi && <span className="badge gold">절기 · {selDay.jeolgi}</span>}
-            {selDay.son && <span className="badge">손없는날 — 이사·이장에 좋아요</span>}
-            {selMatch && <span className="badge">{selMatch.tg} · {selMatch.rel.label}</span>}
-            {selMatch && <span className={`badge${selMatch.grade === "길" ? " gold" : ""}`}>{me?.name}님에게 {selMatch.grade === "보통" ? "무난한 날" : selMatch.grade === "길" ? "좋은 날" : "조심할 날"}</span>}
-          </div>
+          <p className="cal2-line">음력 {selDay.lunar.m}월 {selDay.lunar.d}일{selDay.lunar.leap ? " (윤달)" : ""}</p>
+          {selTags.length > 0 && (
+            <ul className="cal2-tags">
+              {selTags.map(t => (
+                <li key={t.t} className={t.good ? "good" : "warn"}>{t.t}</li>
+              ))}
+            </ul>
+          )}
           {selMatch && <p className="cal2-advice">{dayAdvice(selMatch)}</p>}
           {!me && checked && (
             <p className="form-hint" style={{ marginTop: 12 }}>
               <Link href="/account" className="adm-link">회원 탭에서 사주 프로필을 등록</Link>하면
-              이 달력에 나의 길일(금점)·조심할 날(적점)이 함께 표시돼요.
+              나에게 좋은 날·조심할 날이 달력에 바로 표시돼요.
             </p>
           )}
+          <p className="cal2-gzref">일진 {selDay.gz.kr}({selDay.gz.hj}) · {selDay.gz.line}</p>
         </div>
       )}
-
-      <p className="cal2-legend">
-        <i className="cal2-dot good" /> 길일 · <i className="cal2-dot warn" /> 주의 · <i className="cal2-dot term" /> 절기 · <em className="cal2-son">손</em> 손없는날
-      </p>
     </>
   );
 }

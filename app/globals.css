@@ -683,26 +683,50 @@ body:has(.admin-shell) .gtabs{display:none;}
 .cal2-cell.today .cal2-d{color:var(--gold); font-weight:700;}
 .cal2-d{font-size:14.5px; font-weight:600; color:var(--paper); line-height:1.2;}
 .cal2-d.sun{color:var(--nakgwan-text);}
-.cal2-gz{font-family:var(--serif); font-size:12px; color:var(--paper-dim); letter-spacing:.08em; line-height:1.2;}
-.cal2-marks{display:flex; align-items:center; gap:3px; min-height:12px;}
+.cal2-tag{font-size:12px; font-weight:600; line-height:1.3; font-family:var(--sans); letter-spacing:.02em;}
+.cal2-tag.good{color:var(--gold);}
+.cal2-tag.warn{color:var(--nakgwan-text);}
+.cal2-tag.term{color:var(--e-mok);}
+.cal2-tag.son{color:var(--e-su);}
+.cal2-marks{display:flex; align-items:center; gap:3px; min-height:8px;}
 .cal2-dot{display:inline-block; width:6px; height:6px; border-radius:0;}
 .cal2-dot.good{background:var(--gold);}
 .cal2-dot.warn{background:var(--nakgwan-text);}
-.cal2-dot.term{background:var(--e-mok);}
 .cal2-son{font-style:normal; font-size:12px; color:var(--e-su); line-height:1;}
+.cal2-sum{
+  background:var(--ink-1); border:1px solid var(--line); border-radius:var(--r-card);
+  padding:14px 18px; margin:0 0 16px; font-family:var(--sans);
+  animation:fadeUp .35s cubic-bezier(.22,1,.36,1) both;
+}
+.cal2-sum p{margin:0 0 6px; font-size:14px; color:var(--paper-dim); line-height:1.7;}
+.cal2-sum p:last-child{margin-bottom:0;}
+.cal2-sum b{font-weight:600; color:var(--paper); margin-right:6px;}
+.cal2-sum b.g{color:var(--gold);}
+.cal2-sum b.w{color:var(--nakgwan-text);}
 .cal2-detail{animation:fadeUp .3s cubic-bezier(.22,1,.36,1) both;}
-.cal2-dt{font-family:var(--serif); font-size:19px; font-weight:600; color:var(--paper); margin:0;}
-.cal2-dt b{font-weight:600;}
+.cal2-dt{font-family:var(--serif); font-size:19px; font-weight:600; color:var(--paper); margin:0;
+  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+.cal2-grade{font-family:var(--sans); font-size:13.5px; font-weight:600; color:var(--paper-dim);}
+.cal2-grade.g{color:var(--gold);}
+.cal2-grade.w{color:var(--nakgwan-text);}
 .cal2-line{font-size:14.5px; color:var(--paper-dim); margin:6px 0 0; font-family:var(--sans);}
+.cal2-tags{list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column; gap:8px;}
+.cal2-tags li{
+  font-size:15px; color:var(--paper); font-family:var(--sans); line-height:1.7;
+  padding-left:18px; position:relative;
+}
+.cal2-tags li::before{content:""; position:absolute; left:2px; top:.65em; width:7px; height:7px; border-radius:0;}
+.cal2-tags li.good::before{background:var(--gold);}
+.cal2-tags li.warn::before{background:var(--nakgwan-text);}
 .cal2-advice{
   font-family:var(--serif); font-size:17px; line-height:1.95; color:var(--paper);
   border-left:1px solid var(--gold-dim); padding:4px 0 4px 18px; margin:16px 0 0;
 }
-.cal2-legend{font-size:13px; color:var(--paper-dim); font-family:var(--sans); margin:4px 2px 0;
-  display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+.cal2-gzref{font-size:12.5px; color:var(--paper-dim); margin:16px 0 0; font-family:var(--sans);
+  border-top:1px solid var(--line); padding-top:12px;}
 @media (max-width:560px){
   .cal2-cell{min-height:58px; padding:5px 1px 5px;}
-  .cal2-gz{letter-spacing:.02em;}
+  .cal2-tag{font-size:12px;}
 }
 
 /* ══ 공유 ══ */

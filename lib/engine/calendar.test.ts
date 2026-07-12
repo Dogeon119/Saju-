@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildMonth, matchDay, dayAdvice } from "./calendar";
+import { buildMonth, matchDay, dayAdvice, dayTags } from "./calendar";
 import { todayGanzhi } from "./today";
 
 describe("buildMonth", () => {
@@ -51,5 +51,15 @@ describe("matchDay · dayAdvice", () => {
     const m = matchDay(2, 5, todayGanzhi(new Date(2026, 6, 12)));
     expect(m.tg).toBeTruthy();
     expect(m.rel.label).toBeTruthy();
+  });
+
+  it("실생활 태그 — 손없는날·절기·관계별 문구", () => {
+    const base = { d: 1, gz: gzOf(6), lunar: { m: 5, d: 9, leap: false }, son: true, jeolgi: "소서" };
+    const tags = dayTags(base, matchDay(0, 0, base.gz)); // 子-午 충
+    expect(tags.some(t => t.t.includes("이사"))).toBe(true);
+    expect(tags.some(t => t.t.includes("소서"))).toBe(true);
+    expect(tags.some(t => !t.good && t.t.includes("큰 결정"))).toBe(true);
+    // 게스트(match 없음)도 생활 태그는 나온다
+    expect(dayTags(base, null)).toHaveLength(2);
   });
 });

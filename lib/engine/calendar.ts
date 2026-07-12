@@ -82,3 +82,33 @@ const TG_LINE: Record<TenGodName, string> = {
 export function dayAdvice(match: DayMatch): string {
   return match.rel.k === "none" ? TG_LINE[match.tg] : REL_LINE[match.rel.k];
 }
+
+/** 실생활 태그 — "이 날 뭐 하면 좋은가"를 생활 언어로 */
+export interface DayTag { t: string; good: boolean; }
+
+export function dayTags(day: CalDay, match: DayMatch | null): DayTag[] {
+  const tags: DayTag[] = [];
+  if (day.son) tags.push({ t: "이사·입주·못질 좋은 날", good: true });
+  if (day.jeolgi) tags.push({ t: `절기 ${day.jeolgi} — 계절이 바뀌는 날`, good: true });
+  if (!match) return tags;
+  switch (match.rel.k) {
+    case "samhap": tags.push({ t: "시작·계약·부탁 잘 통해요", good: true }); break;
+    case "yukhap": tags.push({ t: "만남·화해·고백에 순풍", good: true }); break;
+    case "chung": tags.push({ t: "큰 결정·이동은 내일로", good: false }); break;
+    case "wonjin": tags.push({ t: "예민한 대화 피하기", good: false }); break;
+    case "hae": tags.push({ t: "약속·서류 한 번 더 확인", good: false }); break;
+    case "same": tags.push({ t: "내 페이스대로 가는 날", good: true }); break;
+    case "none":
+      switch (match.tg) {
+        case "정관": case "정인": tags.push({ t: "서류·결재·공부 잘 풀려요", good: true }); break;
+        case "식신": tags.push({ t: "모임·데이트·맛집 좋아요", good: true }); break;
+        case "정재": tags.push({ t: "저축·정리·알뜰한 하루", good: true }); break;
+        case "겁재": case "편재": tags.push({ t: "지갑 단속 — 충동구매 주의", good: false }); break;
+        case "상관": tags.push({ t: "말조심 — 윗사람 앞 반 박자", good: false }); break;
+        case "편관": tags.push({ t: "무리 금지 — 컨디션 관리", good: false }); break;
+        default: break; // 비견·편인 등은 태그 없이 조언 문장만
+      }
+      break;
+  }
+  return tags;
+}
