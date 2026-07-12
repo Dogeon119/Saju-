@@ -263,7 +263,7 @@
 - 페이지 아이덴티티: 전 탭 `PageHead`(도장 印 + 큰 제목 + 설명) — 命戀緣歲曆日冊人
 - 구분감: 기능 블록 전부 카드 표면(`.card`) 분리, 모드 탭 박스형 세그먼트화
 - 회원 탭 확장 (SION 보안센터 참고): 계정 카드(입회일) · 사주 프로필 · 비밀번호 변경(auth.updateUser) · 화면 설정(테마 세그먼트) · 서재 바로가기 · 회원 탈퇴(2단 확인, `/api/account/delete` — profiles cascade, readings는 익명화)
-어드민은 숨은 입구 3중 게이트 — `/?view=admin` → 4자리 번호(`ADMIN_PIN`, 기본 0119) → 관리자 계정 로그인(`ADMIN_EMAILS` 서버 검증). 콘솔은 모던 화이트 예외 구역(DESIGN.md 부록 D).
+어드민은 숨은 입구 3중 게이트 — `/?view=admin` → 4자리 번호(`ADMIN_PIN`, 기본 1199) → 관리자 계정 로그인(`ADMIN_EMAILS` 서버 검증). 콘솔은 모던 화이트 예외 구역(DESIGN.md 부록 D).
 
 ---
 

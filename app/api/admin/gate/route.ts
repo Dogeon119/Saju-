@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   let body: { pin?: unknown };
   try { body = await req.json(); } catch { return Response.json({ error: "잘못된 요청" }, { status: 400 }); }
   const pin = String(body.pin ?? "");
-  const expected = process.env.ADMIN_PIN || "0119";
+  const expected = process.env.ADMIN_PIN || "1199";
   if (pin === expected) return Response.json({ ok: true });
   return Response.json({ error: "번호가 맞지 않아요." }, { status: 401 });
 }
