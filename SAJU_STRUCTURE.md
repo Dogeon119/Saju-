@@ -200,7 +200,7 @@
       → 엔진 `lib/engine/` (analyze·relations 수기 타입 / render·constants 자동생성) · 텍스트 `content/` 7파일
 - [x] ssaju를 IIFE 인라인 대신 **npm 의존성**으로 전환 (v0.2.0)
 - [x] 엔진 회귀 테스트 15종 (`engine.test.ts` — 만세력 교차검증·렌더 스윕 400회+·점수 범위·XSS) + CI (`.github/workflows/ci.yml`)
-- [ ] Vercel 연결 (push 자동 배포) — vercel.com에서 저장소 Import 필요 (수동 1회)
+- [x] Vercel 연결 (push 자동 배포) — 프로덕션 https://saju-six-lac.vercel.app (2026-07-13 확인, Supabase env 등록·저장/공유 E2E 통과)
 - **완료 기준(DoD)**: 배포된 사이트에서 5개 모드가 현재 HTML과 동일하게 동작
 - 잔여 기술부채: `lib/engine/render.ts`는 자동생성(@ts-nocheck) — Phase 1에서 컴포넌트화(PillarBoard 등)하며 타입 승격
 
