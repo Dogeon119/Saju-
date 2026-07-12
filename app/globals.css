@@ -439,7 +439,8 @@ ul.pts.blue li::before{background:var(--line-strong);}
 
 @media (max-width:640px){
   .wrap{padding:32px 16px 96px;}
-  .modes{margin:0 -16px 24px; padding:8px 16px 0;}
+  .modes{margin:0 -16px 24px; padding:8px 16px 0; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  .mode-btn{flex:1 0 auto; padding:10px 12px 12px;}
   .grid{grid-template-columns:1fr;}
   .duo{grid-template-columns:1fr;}
   .cell{width:44px; height:46px;}

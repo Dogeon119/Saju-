@@ -10,6 +10,10 @@ import {
 
 const MODE_TITLE: Record<string, string> = {
   saju: "정통사주", love: "연애비책", gunghap: "사주궁합", yearly: "올해의운세",
+  daily: "오늘의운세", manse: "만세력",
+};
+const MODE_MK: Record<string, string> = {
+  saju: "命", love: "戀", gunghap: "緣", yearly: "歲", daily: "日", manse: "曆",
 };
 
 interface HistRow { share_id: string; mode: string; created_at: string; }
@@ -189,7 +193,7 @@ export default function AccountApp() {
         <div className="mode-list">
           {hist.map(h => (
             <Link key={h.share_id} href={`/r/${h.share_id}`} className="mode-row">
-              <span className="mk">{{ saju: "命", love: "戀", gunghap: "緣", yearly: "歲" }[h.mode] ?? "命"}</span>
+              <span className="mk">{MODE_MK[h.mode] ?? "命"}</span>
               <span>
                 <span className="mt">{MODE_TITLE[h.mode] ?? h.mode} 감정서</span>
                 <span className="md">{fmtDate(h.created_at)}</span>

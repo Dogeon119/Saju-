@@ -18,9 +18,10 @@ import {
   YEAR_TG, MONEY_TG, WORK_TG, MONTH_TG,
   REL_STATUS, REL_GAP, STATUS_ADVICE, FIRST_IMPRESSION, RECONCILE, VALUES_TG, PAST_LIFE,
   EXPRESS, TALK, SPORT_GOOD, SPORT_BAD, MONEY_STYLE, STRENGTH_TXT, YONGSIN_FRAME, MONTH_CAUTION,
+  TODAY_TG, TODAY_REL,
 } from "@/content";
 
-export type Mode = "saju" | "love" | "gunghap" | "yearly";
+export type Mode = "saju" | "love" | "gunghap" | "yearly" | "daily" | "manse";
 export interface ReportOptions { B?: Person; relStatus?: number; relGap?: number; job?: string; }
 
 /* ═══════════ 공용 헬퍼 ═══════════ */
@@ -652,12 +653,123 @@ export function renderYearly(A, job = "직장인") {
   return html;
 }
 
+/* ═══════════ 모드 5 : 오늘의운세 (4장) ═══════════ */
+function parseGz(code) {
+  const s = STEMS.findIndex(x => x.hj === code[0]);
+  const b = BRANCHES.findIndex(x => x.hj === code[1]);
+  return { s, b };
+}
+
+export function renderDaily(A) {
+  const today = parseGz(A.r.reference.codes.today);
+  const tg = tenGod(A.ds, today.s);
+  const rel = branchRelation(A.db, today.b);
+  const T = TODAY_TG[tg];
+  const { yongE } = yongTriple(A);
+  const now = new Date();
+  const dateLabel = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
+  const gz = `${STEMS[today.s].hj}${BRANCHES[today.b].hj} (${STEMS[today.s].kr}${BRANCHES[today.b].kr})`;
+  const luckBranch = BRANCHES.findIndex((_, i) => i !== today.b && isSamhap(i, today.b));
+  let html = "";
+
+  html += sec("第一章", "오늘의 일진", `${dateLabel} · 오늘 하늘의 기운이 내 사주에 닿는 자리`,
+    kv([
+      ["오늘의 간지", `<strong>${gz}</strong>`],
+      ["나와의 인연", `일간 ${STEMS[A.ds].kr} 기준 <strong>${tg}</strong>의 날`],
+      ["배우자궁과", rel.k === "none" ? "합충 없음 — 담백" : `${rel.label} 기운`],
+    ]) + paras(T.body) +
+    note(`일진(日辰)은 오늘 하루의 간지예요. 그 천간이 내 일간과 맺는 십성으로 하루의 결을 읽는 게 일운의 기본이랍니다.`),
+    T.head);
+
+  html += sec("第二章", "오늘의 사랑과 사람", "마음이 오가는 자리",
+    paras(T.love) + `<p>${TODAY_REL[rel.k] ?? TODAY_REL.none}</p>`,
+    first(T.love));
+
+  html += sec("第三章", "오늘의 일과 돈", "책상과 지갑의 날씨",
+    paras(T.money),
+    first(T.money));
+
+  html += sec("第四章", "오늘의 처방", "작지만 확실한 개운 세 가지",
+    `<ul class="pts gold">
+      <li><strong>행운의 시간</strong> — ${luckBranch >= 0 ? `${BRANCHES[luckBranch].kr}시 언저리: 오늘의 기운과 합을 이루는 시간대예요. 중요한 연락과 약속은 이쪽으로.` : "정오 무렵 — 해가 가장 높은 시간의 기세를 빌리세요."}</li>
+      <li><strong>행운의 색</strong> — ${COLOR[yongE]}: 당신의 용신 기운을 돋우는 색이에요. 소품 하나면 충분해요.</li>
+      <li><strong>행운의 음식</strong> — ${FOODS[yongE]}.</li>
+    </ul>` + paras(T.care),
+    "행운의 시간·색·음식 — 하나만 챙겨도 오늘이 달라져요");
+
+  html += sec("終章", "오늘의 한 줄", "",
+    `<p>일진은 하루짜리 날씨예요. 오늘이 흐렸다면 내일은 다른 하늘이 뜨니까, 무거워하지 말고 우산 하나 챙기는 마음이면 충분해요.</p>
+    <p class="prophecy">"${A.name}아, 하루의 운은 아침에 정해지나 하루의 값은 저녁에 매겨지느니라. 오늘 하늘이 준 것을 어떻게 썼는지 — 그것만이 네 것이니라."</p>`,
+    T.head);
+  return html;
+}
+
+/* ═══════════ 모드 6 : 만세력 (6장 · 풀이 없는 도구) ═══════════ */
+export function renderManse(A) {
+  const adv = A.r.advanced;
+  const pd = A.r.pillarDetails;
+  const PK = [["hour", "시주"], ["day", "일주"], ["month", "월주"], ["year", "연주"]];
+  const hs = k => {
+    if (k === "hour" && !A.hourKnown) return "시간 모름";
+    const h = pd[k].hiddenStems;
+    return `여기 ${h["여기"] ?? "-"} · 중기 ${h["중기"] ?? "-"} · 정기 ${h["정기"] ?? "-"}`;
+  };
+  let html = "";
+
+  html += sec("第一章", "나의 원국", `${A.y}년 ${A.m}월 ${A.d}일생 ${A.sex === "F" ? "곤명(여)" : "건명(남)"}`,
+    pillarsHTML(A) + ohaengHTML(A.elems) +
+    `<div class="gukguk-line">
+      <span class="chip">격국 <b>${adv.geukguk}</b></span>
+      <span class="chip">${{ strong: "신강", weak: "신약", neutral: "중화" }[adv.dayStrength.strength]} (${adv.dayStrength.score})</span>
+      <span class="chip">용신 <b>${adv.yongsin.join(" · ")}</b></span>
+      <span class="chip">공망 <b>${A.r.gongmang.branchesKo.join("·")}</b></span>
+    </div>`,
+    `일간 ${STEMS[A.ds].kr}(${STEMS[A.ds].hj}) · 일지 ${BRANCHES[A.db].kr}(${BRANCHES[A.db].hj})`);
+
+  html += sec("第二章", "지장간(支藏干)", "지지 속에 숨은 천간",
+    kv(PK.map(([k, label]) => [label, hs(k)])) +
+    note("지장간은 각 지지 안에 담긴 천간의 기운이에요. 겉(지지)과 속(지장간)이 다른 자리를 읽을 때 씁니다."));
+
+  html += sec("第三章", "십이운성과 신살", "자리마다의 계절",
+    kv(PK.map(([k, label]) => {
+      if (k === "hour" && !A.hourKnown) return [label, "시간 모름"];
+      const sal = A.r.sals[k];
+      const sp = sal.specialSals?.length ? ` · ${sal.specialSals.join("·")}` : "";
+      return [label, `${A.r.stages12.bong[k]} · ${sal.twelveSal}${sp}`];
+    })) +
+    note(`길신: ${adv.sinsal.gilsin.length ? adv.sinsal.gilsin.join("·") : "-"} / 흉신: ${adv.sinsal.hyungsin.length ? adv.sinsal.hyungsin.join("·") : "-"}`));
+
+  html += sec("第四章", "대운(大運)", `${A.r.daeun.startAge}세부터 10년 단위의 큰 물줄기`,
+    `<div class="cal">${A.r.daeun.list.map(d => {
+      const cur = A.r.daeun.current && d.startAge === A.r.daeun.current.startAge;
+      return `<div class="cal-row"><span class="cm">${d.age_range}${cur ? " <em>지금</em>" : ""}</span><span class="ct2">${d.ganzhi}</span><span class="cd">${d.stemTenGod}·${d.branchTenGod} · ${d.stage12}</span></div>`;
+    }).join("")}</div>`);
+
+  html += sec("第五章", "세운(歲運) 10년", "해마다의 흐름",
+    `<div class="cal">${A.r.seyun.map(s => {
+      const cur = s.year === A.r.currentYear;
+      return `<div class="cal-row"><span class="cm">${s.year}년${cur ? " <em>올해</em>" : ""}</span><span class="ct2">${s.ganzhi}</span><span class="cd">${s.tenGodStem}·${s.tenGodBranch} · ${s.stage12}</span></div>`;
+    }).join("")}</div>`);
+
+  html += sec("第六章", "올해의 월운(月運)", `${A.r.currentYear}년 열두 달`,
+    `<div class="cal">${A.r.wolun.map(w =>
+      `<div class="cal-row"><span class="cm">${wolunSolarMonth(w.month)}월 (${w.monthName})</span><span class="ct2">${w.ganzhi}</span><span class="cd">${w.stemTenGod}·${w.branchTenGod} · ${w.stage12}</span></div>`,
+    ).join("")}</div>`);
+
+  html += sec("終章", "쓰임에 관하여", "",
+    `<p>만세력은 풀이가 아니라 지도예요. 어느 풀이든 이 표에서 출발하니까, 다른 곳의 풀이가 궁금할 때 이 지도와 겹쳐 보세요. 표와 다른 말을 하는 풀이는 걸러 들으셔도 됩니다.</p>`,
+    "원국·대운·세운·월운 — 모든 풀이의 출발점");
+  return html;
+}
+
 /* ═══════════ 리포트 조립 ═══════════ */
 const GREET = {
   saju: A => `어서 오세요, ${A.name}님! 오늘은 태어난 날의 하늘부터 앞으로 5년의 바람까지, ${A.name}님의 사주 전체를 열세 장에 걸쳐 찬찬히 읽어 드릴게요. 어려운 용어는 장마다 아래쪽에 따로 풀어 뒀으니까, 편한 마음으로 따라오시면 돼요.`,
   love: A => `어서 오세요, ${A.name}님! 곧 만나게 될 인연, 궁금하시죠? 내가 가진 매력부터 운명의 짝, 그리고 꼭 걸러야 할 악연까지 — 붉은 실을 따라 일곱 장으로 차근차근 읽어 드릴게요.`,
   gunghap: (A, B) => `어서 오세요, ${A.name}님, 그리고 ${B?.name ?? "상대"}님! 두 분의 사주를 나란히 펼쳐 놓고 성격·감정·체질·재물·혼인까지 여덟 장에 걸쳐 겹쳐 볼게요. 좋은 얘기만 하지는 않을 거예요 — 그래야 진짜 도움이 되니까요.`,
   yearly: A => `어서 오세요, ${A.name}님! 올 한 해의 지도를 같이 펼쳐 보는 시간이에요. 총운부터 달별 흐름, 길흉육조까지 — 위기는 미리 알면 절반이 되고, 기회는 미리 알면 두 배가 되거든요.`,
+  daily: A => `좋은 하루예요, ${A.name}님! 오늘 하늘의 간지가 당신의 사주에 어떤 자리로 닿는지, 사랑·일·돈 순으로 가볍고 실속 있게 짚어 드릴게요. 내일은 또 새 하늘이 뜨니까, 매일 들러 주세요.`,
+  manse: A => `${A.name}님의 만세력이에요. 풀이 없이 원국과 운의 흐름표만 담백하게 펼쳤어요 — 공부하실 때, 다른 풀이와 견줘 보실 때 꺼내 쓰시면 돼요.`,
 };
 
 export function renderReport(mode: Mode, A: Person, opts: ReportOptions = {}): string {
@@ -668,6 +780,8 @@ export function renderReport(mode: Mode, A: Person, opts: ReportOptions = {}): s
   else if (mode === "gunghap") {
     if (!B) throw new Error("궁합 모드에는 상대(B)가 필요해요");
     html = renderGunghapDeep(A, B, relStatus);
-  } else html = renderYearly(A, job);
+  } else if (mode === "daily") html = renderDaily(A);
+  else if (mode === "manse") html = renderManse(A);
+  else html = renderYearly(A, job);
   return `<hr class="thread">` + tocHTML(html, GREET[mode](A, B)) + html;
 }

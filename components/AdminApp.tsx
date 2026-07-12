@@ -15,8 +15,12 @@ interface Stats {
 
 const MODE_TITLE: Record<string, string> = {
   saju: "정통사주", love: "연애비책", gunghap: "사주궁합", yearly: "올해의운세",
+  daily: "오늘의운세", manse: "만세력",
 };
-const MODE_ORDER = ["saju", "love", "gunghap", "yearly"];
+const MODE_MK: Record<string, string> = {
+  saju: "命", love: "戀", gunghap: "緣", yearly: "歲", daily: "日", manse: "曆",
+};
+const MODE_ORDER = ["saju", "love", "gunghap", "yearly", "daily", "manse"];
 
 function fmtDateTime(iso: string): string {
   const d = new Date(iso);
@@ -106,7 +110,7 @@ export default function AdminApp() {
         <div className="mode-list">
           {stats.recent.map(r => (
             <Link key={r.share_id} href={`/r/${r.share_id}`} className="mode-row">
-              <span className="mk">{{ saju: "命", love: "戀", gunghap: "緣", yearly: "歲" }[r.mode] ?? "命"}</span>
+              <span className="mk">{MODE_MK[r.mode] ?? "命"}</span>
               <span>
                 <span className="mt">{MODE_TITLE[r.mode] ?? r.mode}</span>
                 <span className="md">{fmtDateTime(r.created_at)} · {r.member ? "회원" : "게스트"}</span>

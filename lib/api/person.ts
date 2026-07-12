@@ -2,7 +2,7 @@
 import type { PersonInput, Sex } from "../engine/analyze";
 import type { Mode } from "../engine/modes";
 
-export const MODES: Mode[] = ["saju", "love", "gunghap", "yearly"];
+export const MODES: Mode[] = ["saju", "love", "gunghap", "yearly", "daily", "manse"];
 
 export interface PersonPayload {
   name?: string; sex?: string; year?: number; month?: number; day?: number;

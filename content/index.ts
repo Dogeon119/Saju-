@@ -11,3 +11,4 @@ export * from "./jeongtong";
 export * from "./reunion";
 export * from "./yearly";
 export * from "./deep";
+export * from "./daily";

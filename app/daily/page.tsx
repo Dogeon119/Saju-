@@ -1,0 +1,19 @@
+import type { Metadata } from "next";
+import SiteHeader from "@/components/SiteHeader";
+import ModeTabs from "@/components/ModeTabs";
+import ReadingApp from "@/components/ReadingApp";
+
+export const metadata: Metadata = {
+  title: "오늘의운세",
+  description: "오늘의 일진이 내 사주에 닿는 자리 — 총운·사랑·일과 돈·오늘의 처방까지, 매일 새로 뜨는 하루 운세.",
+};
+
+export default function Page() {
+  return (
+    <div className="wrap">
+      <SiteHeader />
+      <ModeTabs />
+      <ReadingApp mode="daily" />
+    </div>
+  );
+}

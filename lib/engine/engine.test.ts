@@ -72,10 +72,12 @@ describe("십성·합충", () => {
   });
 });
 
-/* ── 4모드 렌더 스윕 ── */
-describe("4모드 렌더 스윕", () => {
-  const modes: Mode[] = ["saju", "love", "gunghap", "yearly"];
-  const expectedSections: Record<Mode, number> = { saju: 13, love: 7, gunghap: 8, yearly: 8 };
+/* ── 전 모드 렌더 스윕 ── */
+describe("전 모드 렌더 스윕", () => {
+  const modes: Mode[] = ["saju", "love", "gunghap", "yearly", "daily", "manse"];
+  const expectedSections: Record<Mode, number> = { saju: 13, love: 7, gunghap: 8, yearly: 8, daily: 5, manse: 7 };
+  /** 모드별 최소 길이 — 도구·일운 모드는 본문이 짧다 */
+  const minLen: Record<Mode, number> = { saju: 3000, love: 3000, gunghap: 3000, yearly: 3000, daily: 2000, manse: 2500 };
   const partner = P(1990, 5, 20, -1, "M", "상대");
 
   it("생년 스펙트럼 × 성별 × 시간 × 상태 옵션: 예외·undefined·NaN 없음", () => {
@@ -90,7 +92,7 @@ describe("4모드 렌더 스윕", () => {
               relStatus: y % 7, relGap: y % 4, job: ["직장인", "대학생", "사업·자영업"][y % 3],
             });
             runs++;
-            expect(out.length, `${mode} ${y} ${sex} h=${h} 길이`).toBeGreaterThan(3000);
+            expect(out.length, `${mode} ${y} ${sex} h=${h} 길이`).toBeGreaterThan(minLen[mode]);
             expect(out, `${mode} ${y} ${sex} h=${h} 누출`).not.toMatch(/undefined|NaN/);
           }
         }

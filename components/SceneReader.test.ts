@@ -7,7 +7,7 @@ const A = analyzePerson({ sex: "F", year: 1995, month: 7, day: 15, hourIdx: 7, f
 const B = analyzePerson({ sex: "M", year: 1993, month: 3, day: 2, hourIdx: -1, fallbackName: "상대" });
 
 /** 서장(목차) 1 + 본문 장 수 */
-const EXPECTED: Record<Mode, number> = { saju: 14, love: 8, gunghap: 9, yearly: 9 };
+const EXPECTED: Record<Mode, number> = { saju: 14, love: 8, gunghap: 9, yearly: 9, daily: 6, manse: 8 };
 
 describe("SceneReader 파서", () => {
   (Object.keys(EXPECTED) as Mode[]).forEach(mode => {

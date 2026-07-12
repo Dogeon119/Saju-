@@ -15,6 +15,8 @@ const SUBMIT_LABEL: Record<Mode, string> = {
   love: "연애비책 풀이 보기",
   gunghap: "사주궁합 풀이 보기",
   yearly: "올해의 운세 보기",
+  daily: "오늘의 운세 보기",
+  manse: "만세력 펼쳐 보기",
 };
 
 /** AI 스트리밍 출력 — 마크다운 소제목(##)만 가볍게 살려 텍스트로 렌더 (HTML 주입 없음) */
@@ -285,7 +287,7 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
             {shareErr && <p className="err" style={{ display: "block" }}>{shareErr}</p>}
           </div>
 
-          <div className="ai-sec">
+          <div className="ai-sec" style={mode === "manse" ? { display: "none" } : undefined}>
             {!ai && !aiBusy && (
               <button className="ghost-btn" type="button" onClick={onAiReading}>
                 AI 심층 풀이 받기

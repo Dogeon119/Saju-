@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 const MODE_TITLE: Record<Mode, string> = {
   saju: "정통사주", love: "연애비책", gunghap: "사주궁합", yearly: "올해의운세",
+  daily: "오늘의운세", manse: "만세력",
 };
 
 type Row = { mode: Mode; payload: ReadingPayload };

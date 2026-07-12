@@ -13,6 +13,7 @@ export const alt = "월하 사주 감정서";
 
 const MODE_TITLE: Record<string, string> = {
   saju: "정통사주", love: "연애비책", gunghap: "사주궁합", yearly: "올해의운세",
+  daily: "오늘의운세", manse: "만세력",
 };
 
 /** 구글 폰트에서 필요한 글자만 서브셋으로 받아 satori에 넘긴다 (한글 전체 폰트 번들 회피) */
