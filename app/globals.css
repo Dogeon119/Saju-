@@ -86,14 +86,29 @@ header{margin-bottom:40px; display:flex; align-items:center; justify-content:spa
 .brand-name .hanja{display:block; color:var(--gold-dim); font-size:11px; letter-spacing:.4em; font-weight:400; margin-bottom:2px;}
 .tagline{color:var(--paper-dim); font-size:13px; margin:16px 0 0; letter-spacing:.02em;}
 
-/* 홈 히어로 */
-.home-hero{margin:8px 0 40px;}
+/* 홈 히어로 + 수묵 달 장식 (DESIGN.md 부록 F) */
+.home-hero{margin:8px 0 40px; position:relative;}
 .home-hero h1{
   font-family:var(--serif); font-weight:600; font-size:clamp(34px,7vw,46px);
   letter-spacing:.06em; line-height:1.4; margin:0 0 14px; color:var(--paper);
+  position:relative; z-index:1;
 }
 .home-hero h1 b{color:var(--gold); font-weight:600;}
-.home-hero p{color:var(--paper-dim); font-size:17px; margin:0; max-width:44ch;}
+.home-hero p{color:var(--paper-dim); font-size:17px; margin:0; max-width:40ch; position:relative; z-index:1;}
+.hero-art{
+  position:absolute; right:-28px; top:-46px; width:min(48%,350px); height:auto;
+  pointer-events:none; z-index:0; animation:fadeIn .9s ease-out both;
+}
+@media (max-width:640px){
+  .hero-art{width:230px; right:-36px; top:-34px; opacity:.55;}
+}
+
+/* 운문 오너먼트 · 빈 상태 일러스트 */
+.ornament{display:flex; justify-content:center; margin:4px 0 28px; animation:fadeIn .6s ease-out both;}
+.ornament svg{width:170px; height:auto;}
+.empty-art{display:block; width:210px; height:auto; margin:8px auto 18px; animation:fadeUp .45s cubic-bezier(.22,1,.36,1) both;}
+.empty-wrap{text-align:center; padding:16px 0 8px;}
+.empty-wrap .acct-empty{text-align:center;}
 
 /* ── 괘선 구분 ── */
 .thread{border:0; height:1px; margin:32px 0; background:var(--line);}

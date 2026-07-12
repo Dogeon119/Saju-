@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabaseBrowser } from "@/lib/db/browser";
+import { EmptyBooksArt } from "./art";
 
 const MODE_TITLE: Record<string, string> = {
   saju: "정통사주", love: "연애비책", gunghap: "사주궁합", yearly: "올해의운세",
@@ -43,10 +44,13 @@ export default function LibraryApp() {
 
   if (state === "anon") {
     return (
-      <p className="acct-empty">
-        서재는 회원의 감정서 보관함이에요. <Link href="/account" className="adm-link">회원 탭에서 로그인</Link>하고
-        풀이 결과에서 &ldquo;감정서 공유 링크 만들기&rdquo;를 누르면, 그 감정서가 여기에 차곡차곡 모여요.
-      </p>
+      <div className="empty-wrap">
+        <EmptyBooksArt />
+        <p className="acct-empty">
+          서재는 회원의 감정서 보관함이에요. <Link href="/account" className="adm-link">회원 탭에서 로그인</Link>하고
+          풀이 결과에서 &ldquo;감정서 공유 링크 만들기&rdquo;를 누르면, 그 감정서가 여기에 차곡차곡 모여요.
+        </p>
+      </div>
     );
   }
 
@@ -56,10 +60,13 @@ export default function LibraryApp() {
   return (
     <>
       {hist.length === 0 && (
-        <p className="acct-empty">
-          아직 서재가 비어 있어요. <Link href="/" className="adm-link">홈에서 풀이</Link>를 받고
-          &ldquo;감정서 공유 링크 만들기&rdquo;를 누르면 여기에 보관돼요.
-        </p>
+        <div className="empty-wrap">
+          <EmptyBooksArt />
+          <p className="acct-empty">
+            아직 서재가 비어 있어요. <Link href="/" className="adm-link">홈에서 풀이</Link>를 받고
+            &ldquo;감정서 공유 링크 만들기&rdquo;를 누르면 여기에 보관돼요.
+          </p>
+        </div>
       )}
       {hist.length > 0 && (
         <>

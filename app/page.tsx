@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import HomeGreeting from "@/components/HomeGreeting";
+import { MoonScene, CloudOrnament } from "@/components/art";
 import { MODES } from "@/components/modes";
 
 export default function HomePage() {
@@ -8,6 +9,7 @@ export default function HomePage() {
     <div className="wrap">
       <SiteHeader />
       <section className="home-hero">
+        <MoonScene />
         <h1>
           달빛 아래,
           <br />
@@ -30,6 +32,7 @@ export default function HomePage() {
           </Link>
         ))}
       </nav>
+      <CloudOrnament />
       <p className="disclaimer">
         본 풀이는 전통 명리학의 틀을 빌린 재미와 성찰을 위한 콘텐츠입니다.<br />
         인생의 진짜 주인은 사주가 아니라 오늘의 당신입니다.

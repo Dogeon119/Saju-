@@ -306,3 +306,15 @@ grep -rnP "[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}]" app components content
 - **아코디언**(회원 탭 정리 카드): `grid-template-rows 0fr↔1fr` 전환 0.3s + 셰브런 90° 회전.
 - **금지**: bounce·spring·회전 장식, 0.6s 초과 진입, hover에서의 큰 위치 이동, 무한 반복(상태 점 pulse 제외).
 - `prefers-reduced-motion: reduce`에서 전부 무효 — 기능은 애니메이션 없이도 완결되어야 한다.
+
+---
+
+## 부록 F — 장식 일러스트 규율 (2026-07-12, "이미지 요소로 꾸미기" 요청)
+
+그림은 **수묵 선화(線畵)** 문법 — 달·구름(운문)·산 능선·별. 사진·래스터·그라데이션 채색 금지.
+
+- **인라인 SVG만** 사용한다 (`components/art.tsx`). 외부 이미지 파일·`next/image` 장식 금지 — 테마를 못 따라간다.
+- **색은 토큰 var()만**: 선은 `--gold-dim`·`--line-strong`, 면은 `--gold` 저불투명(≤ .14), 가림(구름이 달을 덮는 부분)은 지면색 `--ink-0` 채움. §7 hex 검증은 tsx도 대상이므로 SVG 안에도 hex를 쓰지 않는다.
+- **화면당 주 장식 1개** (히어로급). 빈 상태(empty state)·구분선 오너먼트는 보조 장식으로 허용.
+- 장식은 `aria-hidden="true"`, 포인터 무시(`pointer-events:none`), 본문 뒤(z 0)에 깔린다. 텍스트 대비를 해치면 불투명도를 낮춘다.
+- 진입은 부록 E의 fadeUp/fadeIn만. 장식 자체의 무한 애니메이션 금지.
