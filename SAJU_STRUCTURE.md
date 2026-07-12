@@ -117,7 +117,7 @@
 │   ├── 🔌 API 라우트 (app/api/)
 │   │   ├── reading/route.ts                → 풀이 생성·저장 (게스트는 익명 저장)
 │   │   ├── share/route.ts                  → 공유 ID 발급
-│   │   ├── ai-reading/route.ts             ⭐ Claude API 프록시 (스트리밍, Phase 3)
+│   │   ├── ai-reading/route.ts             ⭐ LLM 프록시 — 1차 NVIDIA NIM, 스트리밍 (Phase 3)
 │   │   ├── pay/webhook/route.ts            → 토스페이먼츠 웹훅 (Phase 4)
 │   │   └── cron/daily/route.ts             → 데일리 운세 사전 생성 (Vercel Cron)
 │   │
@@ -146,7 +146,7 @@
 │
 ├── 🤖 AI 심층 풀이 (lib/ai/ — Phase 3)
 │   ├── prompt.ts                           → ssaju 결과(toMarkdown) + 모드별 시스템 프롬프트
-│   ├── client.ts                           → Claude API (claude-sonnet-5) 스트리밍 호출
+│   ├── client.ts                           → OpenAI 호환 스트리밍 클라이언트 (1차 NVIDIA NIM 무료 `gpt-oss-120b` → 필요 시 Claude 전환, baseURL·키 교체만)
 │   └── cache.ts                            → 동일 (사주+모드) 결과 재사용 — API 비용 방어 1선
 │
 ├── 🗄 DB (Supabase Postgres + Auth)
@@ -174,7 +174,7 @@
 │   │   └── Postgres (위 스키마)
 │   └── Secrets (Vercel 환경변수)
 │       ├── NEXT_PUBLIC_SUPABASE_URL / ANON_KEY · SUPABASE_SERVICE_ROLE_KEY
-│       ├── ANTHROPIC_API_KEY (Phase 3)
+│       ├── NVIDIA_API_KEY (Phase 3 — Claude 전환 시 ANTHROPIC_API_KEY)
 │       └── TOSS_SECRET_KEY (Phase 4)
 │
 └── 📄 문서·설정
@@ -217,10 +217,13 @@
 - **DoD**: 재방문 유저가 생일 입력 없이 3탭 안에 새 풀이를 받는다
 
 ### Phase 3 — AI 심층 풀이
-- [ ] `/api/ai-reading` Claude API 스트리밍 (기본 풀이 하단 "AI 심층 풀이 받기" 버튼)
-- [ ] 프롬프트: ssaju `toMarkdown()` 원국 + 모드별 지침 + SAJU_CONTENT.md 말투 가이드
-- [ ] 캐싱(동일 사주+모드) + 무료 1일 1회 제한 (비용 방어)
-- **DoD**: 기본 풀이와 겹치지 않는 개인 맞춤 장문 풀이가 스트리밍으로 출력
+- [ ] **프로바이더: 1차 NVIDIA NIM 무료** (build.nvidia.com, OpenAI 호환 API — 가입 크레딧 1,000개, 포럼 신청 시 최대 5,000개, 40 RPM). 무료 티어는 약관상 개발·검증용 → 실서비스 전환 시 `client.ts`의 baseURL·키만 교체
+- [ ] **모델 확정: `openai/gpt-oss-120b`** (OpenAI 오픈 모델, NVIDIA 클라우드 서빙 — 로컬 GPU 불필요). 비중국계 조건 충족 (Qwen·DeepSeek·Kimi·GLM 사용 금지). 한국어 품질 예비 후보: Llama 3.3 70B, 미달 시 Claude API 전환
+- [ ] **분량 목표: 사주 1건당 최대 ~60,000자** — 단일 호출로는 불가능하므로 **장(章)별 분할 생성 파이프라인**: 모드 목차(13/7/8/8장) 기준 장마다 1호출(장당 4,000~5,000자), 순차 스트리밍으로 이어 붙이기 + 장별 재시도
+- [ ] `/api/ai-reading` LLM 프록시 스트리밍 (기본 풀이 하단 "AI 심층 풀이 받기" 버튼)
+- [ ] 프롬프트: ssaju `toMarkdown()` 원국 + 모드별 지침 + 말투 가이드(20대 여성 상담사 해요체) + 기존 정적 풀이 예문 few-shot
+- [ ] 캐싱(동일 사주+모드) + 무료 1일 1회 제한 (크레딧·비용 방어)
+- **DoD**: 기본 풀이와 겹치지 않는 개인 맞춤 장문 풀이(수만 자)가 장 단위로 스트리밍 출력
 
 ### Phase 4 — 유료화
 - [ ] 토스페이먼츠 단건 결제 + `purchases` 기록
