@@ -6,7 +6,8 @@ export type Calendar = "solar" | "lunar" | "lunar-leap";
 export interface FormState { name: string; sex: Sex; cal: Calendar; y: number; m: number; d: number; hourIdx: number; }
 export const emptyForm = (sex: Sex): FormState => ({ name: "", sex, cal: "solar", y: 0, m: 0, d: 0, hourIdx: -1 });
 
-const YEARS = Array.from({ length: 2012 - 1930 + 1 }, (_, i) => 2012 - i);
+const MAX_YEAR = new Date().getFullYear(); // 하드코딩 상한 제거 — 매년 자동 확장(10대 유입 차단 방지)
+const YEARS = Array.from({ length: MAX_YEAR - 1930 + 1 }, (_, i) => MAX_YEAR - i);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 

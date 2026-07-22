@@ -132,6 +132,13 @@ describe("전 모드 렌더 스윕", () => {
     }
   });
 
+  it("job 필드 저장형 XSS 방어: 악성 job이 이스케이프된다", () => {
+    const A = P(1988, 11, 8, 2, "M");
+    const out = renderReport("yearly", A, { job: `<script>alert(1)</script>` });
+    expect(out).not.toContain("<script>");
+    expect(out).toContain("&lt;script&gt;"); // 이스케이프되어 텍스트로만 노출
+  });
+
   it("궁합 점수는 8~99 범위", () => {
     for (let i = 0; i < 40; i++) {
       const A = analyzePerson({ sex: "F", year: 1960 + (i * 3) % 50, month: (i % 12) + 1, day: (i % 27) + 1, hourIdx: -1 });

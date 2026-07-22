@@ -88,7 +88,7 @@ export default function LibraryApp() {
             <div className="mode-list stagger">
               {shown.map(h => (
                 <Link key={h.share_id} href={`/r/${h.share_id}`} className="mode-row">
-                  <span className="mk">{MODE_MK[h.mode] ?? "命"}</span>
+                  <span className="mk" aria-hidden="true">{MODE_MK[h.mode] ?? "命"}</span>
                   <span>
                     <span className="mt">{MODE_TITLE[h.mode] ?? h.mode} 감정서</span>
                     <span className="md">{fmtDate(h.created_at)}</span>

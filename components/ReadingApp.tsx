@@ -20,6 +20,15 @@ const SUBMIT_LABEL: Record<Mode, string> = {
   manse: "만세력 펼쳐 보기",
 };
 
+/* 게스트 입력 기억 — 재방문 시 생일 재입력 방지 (로그인 유저는 profiles가 우선) */
+const GUEST_KEY = "wolha-guest-form";
+function loadGuestForms(): { a?: FormState; b?: FormState } {
+  try { return JSON.parse(localStorage.getItem(GUEST_KEY) || "{}"); } catch { return {}; }
+}
+function saveGuestForms(a: FormState, b?: FormState) {
+  try { localStorage.setItem(GUEST_KEY, JSON.stringify({ a, b })); } catch { /* 사생활 모드 등 */ }
+}
+
 /** AI 스트리밍 출력 — 마크다운 소제목(##)만 가볍게 살려 텍스트로 렌더 (HTML 주입 없음) */
 function AiText({ text }: { text: string }) {
   return (
@@ -77,9 +86,13 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
         B = toPerson(fB ?? formB, "상대");
       }
       setHtml(renderReport(mode, A, { B, relStatus, relGap, job }));
+      saveGuestForms(fA, mode === "gunghap" ? (fB ?? formB) : undefined); // 게스트 재방문 자동채움
       setAi(""); setAiErr("");
       setShareUrl(""); setShareErr(""); setCopied(false);
-      requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      requestAnimationFrame(() => {
+        resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        resultRef.current?.focus({ preventScroll: true }); // 결과로 포커스 이동 (SR·키보드)
+      });
       return true;
     } catch (ex) {
       setErr("풀이 중 오류가 났습니다: " + (ex instanceof Error ? ex.message : String(ex)));
@@ -96,12 +109,21 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
         const sb = supabaseBrowser();
         const { data: { session } } = await sb.auth.getSession();
         if (cancelled) return;
+        const applyGuest = () => {
+          if (dirtyA.current) return;
+          const g = loadGuestForms();
+          if (g.a && (g.a.y || g.a.m || g.a.d)) {
+            setFormA(g.a); setPrefilled(true);
+            if (g.b && mode === "gunghap") setFormB(g.b);
+            if (mode === "daily") runReading(g.a); // 오늘 탭은 바로 펼침
+          }
+        };
         setMember(!!session);
-        if (!session) return;
+        if (!session) { applyGuest(); return; } // 게스트: 직전 입력 기억
         const { data } = await sb.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
-        if (!data || cancelled || dirtyA.current) return;
-        const p = data as ProfileRow;
-        if (!p.year || !p.month || !p.day) return;
+        if (cancelled || dirtyA.current) return;
+        const p = data as ProfileRow | null;
+        if (!p || !p.year || !p.month || !p.day) { applyGuest(); return; } // 로그인·프로필 없음 → 게스트 저장분
         const nf = profileToForm(p);
         setFormA(nf);
         setPrefilled(true);
@@ -259,7 +281,7 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
         )}
 
         <button className="submit" type="submit">{SUBMIT_LABEL[mode]}</button>
-        {err && <p className="err" style={{ display: "block" }}>{err}</p>}
+        {err && <p className="err" role="alert" style={{ display: "block" }}>{err}</p>}
 
         {mode === "gunghap" && (
           <div className="invite-sec">
@@ -277,13 +299,13 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
                 <p className="share-link">{inviteUrl}</p>
               </div>
             )}
-            {inviteErr && <p className="err" style={{ display: "block" }}>{inviteErr}</p>}
+            {inviteErr && <p className="err" role="alert" style={{ display: "block" }}>{inviteErr}</p>}
           </div>
         )}
       </form>
 
       {html && (
-        <div id="result" ref={resultRef} style={{ display: "block" }}>
+        <div id="result" ref={resultRef} tabIndex={-1} aria-label="감정 결과" style={{ display: "block", outline: "none" }}>
           <SceneReader html={html} />
 
           <div className="share-sec">
@@ -298,13 +320,13 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
                 <p className="share-link">{shareUrl}</p>
               </div>
             )}
-            {shareErr && <p className="err" style={{ display: "block" }}>{shareErr}</p>}
+            {shareErr && <p className="err" role="alert" style={{ display: "block" }}>{shareErr}</p>}
           </div>
 
           {!member && (
             <nav className="mode-list" aria-label="회원 안내" style={{ marginTop: 24 }}>
               <Link href="/account" className="mode-row">
-                <span className="mk">人</span>
+                <span className="mk" aria-hidden="true">人</span>
                 <span>
                   <span className="mt">이 감정서, 서재에 두고 보실래요?</span>
                   <span className="md">회원이 되면 감정서가 서재에 모이고, 사주 프로필로 매일 오늘의 운세가 준비돼요.</span>
@@ -317,18 +339,18 @@ export default function ReadingApp({ mode }: { mode: Mode }) {
           <div className="ai-sec" style={mode === "manse" ? { display: "none" } : undefined}>
             {!ai && !aiBusy && (
               <button className="ghost-btn" type="button" onClick={onAiReading}>
-                달토끼의 심층 풀이 듣기
+                AI 심층 풀이 받기
               </button>
             )}
-            {aiBusy && !ai && <p className="ai-wait">달토끼가 달에서 당신의 사주를 내려다보고 있어요. 잠시만요.</p>}
+            {aiBusy && !ai && <p className="ai-wait" aria-live="polite">당신의 사주를 더 깊이 살펴보고 있어요. 잠시만요.</p>}
             {ai && (
               <div className="ai-rp">
-                <h2 className="scene-title">달토끼의 심층 풀이</h2>
+                <h2 className="scene-title">심층 풀이</h2>
                 <AiText text={ai} />
-                {aiBusy && <p className="ai-wait">계속 적는 중이에요</p>}
+                {aiBusy && <p className="ai-wait" aria-live="polite">계속 적는 중이에요</p>}
               </div>
             )}
-            {aiErr && <p className="err" style={{ display: "block" }}>{aiErr}</p>}
+            {aiErr && <p className="err" role="alert" style={{ display: "block" }}>{aiErr}</p>}
           </div>
 
           <button className="again" type="button"

@@ -88,15 +88,21 @@ export default function CalendarApp() {
         <div className="cal2-grid cal2-week" aria-hidden="true">
           {WEEK.map((w, i) => <span key={w} className={`cal2-wd${i === 0 ? " sun" : ""}`}>{w}</span>)}
         </div>
-        <div className="cal2-grid" role="grid" aria-label={`${ym.y}년 ${ym.m}월 운세 달력`}>
+        <div className="cal2-grid" role="group" aria-label={`${ym.y}년 ${ym.m}월 운세 달력`}>
           {Array.from({ length: lead }, (_, i) => <span key={`b${i}`} aria-hidden="true" />)}
           {days.map(day => {
             const m = me ? matchDay(me.ds, me.db, day.gz) : null;
             const dow = (lead + day.d - 1) % 7;
+            const status = day.jeolgi ? `절기 ${day.jeolgi}`
+              : m?.grade === "길" ? "길일"
+              : m?.grade === "주의" ? "주의일"
+              : day.son ? "손없는날" : "";
+            const dayLabel = `${ym.m}월 ${day.d}일 ${WEEK[dow]}요일${status ? `, ${status}` : ""}${isToday(day.d) ? ", 오늘" : ""}`;
             return (
               <button key={day.d} type="button"
                 className={`cal2-cell${sel === day.d ? " on" : ""}${isToday(day.d) ? " today" : ""}`}
                 aria-pressed={sel === day.d}
+                aria-label={dayLabel}
                 onClick={() => setSel(day.d)}>
                 <span className={`cal2-d${dow === 0 ? " sun" : ""}`}>{day.d}</span>
                 {day.jeolgi && <span className="cal2-tag term">{day.jeolgi}</span>}

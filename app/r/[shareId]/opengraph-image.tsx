@@ -62,7 +62,7 @@ export default async function OgImage({ params }: { params: Promise<{ shareId: s
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <svg width="52" height="52" viewBox="0 0 48 48">
-            <path d="M30 6a19 19 0 1 0 0 36 21 21 0 0 1 0-36Z" fill={OG.gold} />
+            <path d="M30 6a19 19 0 1 0 0 36 21 21 0 0 1 0-36Z" fill={OG.goldDim} />
           </svg>
           <span style={{ fontSize: 30, color: OG.paperDim, letterSpacing: 6 }}>{brand}</span>
         </div>

@@ -28,7 +28,8 @@ describe("AI 프롬프트 빌더", () => {
 
   it("시간 미상이면 시주 언급 금지 경고를 싣는다", () => {
     const { user } = buildAiPrompt("gunghap", ME, PARTNER, {});
-    expect(user).toContain("시주(時柱)는 임의값");
+    expect(user).toContain("무효 데이터");
+    expect(user).toContain("언급하지 마세요");
   });
 
   it("이름의 지시문은 호칭 규칙으로 방어된다 (이름이 프롬프트 규칙보다 뒤에 오지 않음)", () => {

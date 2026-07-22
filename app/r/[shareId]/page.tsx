@@ -4,17 +4,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
+import PageHead from "@/components/PageHead";
 import SceneReader from "@/components/SceneReader";
 import { supabaseAdmin } from "@/lib/db/supabase";
 import { analyzePerson } from "@/lib/engine/analyze";
 import { renderReport, type Mode } from "@/lib/engine/modes";
 import { toInput, type ReadingPayload } from "@/lib/api/person";
 
-export const dynamic = "force-dynamic";
+// 감정서 payload는 불변 — 오픈마다 재계산하지 않고 24h ISR 캐시 (성장경로 지연·DB부하 감소)
+export const revalidate = 86400;
 
 const MODE_TITLE: Record<Mode, string> = {
   saju: "정통사주", love: "연애비책", gunghap: "사주궁합", yearly: "올해의운세",
   daily: "오늘의운세", manse: "만세력",
+};
+const MODE_MK: Record<Mode, string> = {
+  saju: "命", love: "戀", gunghap: "緣", yearly: "歲", daily: "日", manse: "曆",
 };
 
 type Row = { mode: Mode; payload: ReadingPayload };
@@ -31,10 +36,16 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { shareId } = await params;
   const row = await loadReading(shareId);
-  if (!row) return { title: "감정서를 찾을 수 없어요" };
+  if (!row) return { title: "감정서를 찾을 수 없어요", robots: { index: false, follow: false } };
   const t = `${MODE_TITLE[row.mode]} 감정서`;
   const d = "달빛 아래 눌러 쓴 사주 감정서가 도착했어요. 지금 펼쳐 보세요.";
-  return { title: t, description: d, openGraph: { title: `월하 — ${t}`, description: d } };
+  // 개인 감정서는 공유 링크 전용 — 검색 색인 제외(프라이버시·중복 방지)
+  return {
+    title: t,
+    description: d,
+    robots: { index: false, follow: false },
+    openGraph: { title: `월하 — ${t}`, description: d },
+  };
 }
 
 export default async function SharePage({ params }: { params: Promise<{ shareId: string }> }) {
@@ -60,7 +71,8 @@ export default async function SharePage({ params }: { params: Promise<{ shareId:
   return (
     <div className="wrap">
       <SiteHeader />
-      <p className="mode-desc">공유받은 {MODE_TITLE[row.mode]} 감정서예요. 보낸 분의 사주를 그대로 펼쳤어요.</p>
+      <PageHead mk={MODE_MK[row.mode]} title={`${MODE_TITLE[row.mode]} 감정서`}
+        desc="공유받은 감정서예요. 보낸 분의 사주를 그대로 펼쳤어요." />
       <SceneReader html={html} />
       <Link href={`/${row.mode}`} className="submit cta-link">나도 내 사주 펼쳐 보기</Link>
       <p className="disclaimer">

@@ -10,7 +10,7 @@ export default function ModeTabs() {
       {MODES.map(m => (
         <Link key={m.href} href={m.href} className={`mode-btn${pathname === m.href ? " on" : ""}`}
           aria-current={pathname === m.href ? "page" : undefined}>
-          <span className="mk">{m.mk}</span>
+          <span className="mk" aria-hidden="true">{m.mk}</span>
           <span className="mt">{m.mt}</span>
         </Link>
       ))}

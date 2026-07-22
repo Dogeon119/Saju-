@@ -27,7 +27,7 @@ function Disc({ mk, title, desc, danger, open, onToggle, children }: {
         <span className="disc-chev" aria-hidden="true">›</span>
       </button>
       <div className="disc-body">
-        <div className="disc-inner">
+        <div className="disc-inner" inert={!open}>
           <div className="disc-pad">{children}</div>
         </div>
       </div>
@@ -76,13 +76,14 @@ export default function AccountApp() {
   const [delErr, setDelErr] = useState("");
 
   useEffect(() => {
+    // 화이트가 기본 — 명시적 dark만 다크로 본다
     setDark(document.documentElement.dataset.theme === "dark");
   }, []);
 
   const setTheme = (toDark: boolean) => {
     setDark(toDark);
     if (toDark) document.documentElement.dataset.theme = "dark";
-    else delete document.documentElement.dataset.theme;
+    else delete document.documentElement.dataset.theme; // 밝음 = 기본(속성 제거)
     try { localStorage.setItem("wolha-theme", toDark ? "dark" : "light"); } catch { /* 무시 */ }
   };
 
@@ -243,8 +244,8 @@ export default function AccountApp() {
         <button className="submit" type="submit" disabled={authBusy}>
           {authBusy ? "확인하는 중이에요" : tab === "up" ? "가입하기" : "로그인"}
         </button>
-        {notice && <p className="notice">{notice}</p>}
-        {authErr && <p className="err" style={{ display: "block" }}>{authErr}</p>}
+        {notice && <p className="notice" role="status">{notice}</p>}
+        {authErr && <p className="err" role="alert" style={{ display: "block" }}>{authErr}</p>}
         <p className="form-hint">
           사주 프로필을 한 번 등록해 두면 모든 풀이가 생일 입력 없이 시작되고, 만든 감정서는 서재 탭에 모여요.
         </p>
@@ -285,7 +286,7 @@ export default function AccountApp() {
       {/* 바로가기 */}
       <div className="mode-list" style={{ marginBottom: 16 }}>
         <Link href="/daily" className="mode-row">
-          <span className="mk">日</span>
+          <span className="mk" aria-hidden="true">日</span>
           <span>
             <span className="mt">오늘의 운세</span>
             <span className="md">{hasProfile ? "프로필로 바로 열려요" : "프로필을 등록하면 자동으로 열려요"}</span>
@@ -293,7 +294,7 @@ export default function AccountApp() {
           <span className="chev" aria-hidden="true">›</span>
         </Link>
         <Link href="/library" className="mode-row">
-          <span className="mk">冊</span>
+          <span className="mk" aria-hidden="true">冊</span>
           <span>
             <span className="mt">나의 서재</span>
             <span className="md">내가 만든 감정서 보관함으로 가기</span>
@@ -319,7 +320,7 @@ export default function AccountApp() {
                 </Link>
               </>
             )}
-            {profErr && <p className="err" style={{ display: "block" }}>{profErr}</p>}
+            {profErr && <p className="err" role="alert" style={{ display: "block" }}>{profErr}</p>}
           </form>
         </Disc>
       </div>
@@ -356,7 +357,7 @@ export default function AccountApp() {
             {pwBusy ? "바꾸는 중이에요" : "비밀번호 바꾸기"}
           </button>
           {pwMsg && <p className="notice">{pwMsg}</p>}
-          {pwErr && <p className="err" style={{ display: "block" }}>{pwErr}</p>}
+          {pwErr && <p className="err" role="alert" style={{ display: "block" }}>{pwErr}</p>}
         </form>
       </Disc>
 
@@ -384,7 +385,7 @@ export default function AccountApp() {
             </div>
           </>
         )}
-        {delErr && <p className="err" style={{ display: "block" }}>{delErr}</p>}
+        {delErr && <p className="err" role="alert" style={{ display: "block" }}>{delErr}</p>}
       </Disc>
     </div>
   );

@@ -5,7 +5,7 @@
  *  스타일: ① 결론 먼저 ② 풀이 단위 항목화 ③ 용어·근거는 하단 분리 ④ 좋은 말만 하지 않기 */
 import { STEMS, BRANCHES, ELEM, EK, YUKHAP, DOHWA } from "./constants";
 import { stemIdxOf, branchIdxOf, gzName, isSamhap, isChung, branchRelation, tenGod } from "./relations";
-import type { Person } from "./analyze";
+import { escapeHtml, type Person } from "./analyze";
 import {
   sec, paras, tocHTML, pillarsHTML, ohaengHTML, baseChartSec, wolunSolarMonth,
   charms, partnerElem, partnerStars, starName,
@@ -525,6 +525,7 @@ export function renderGunghapDeep(A, B, relStatus = 3) {
 
 /* ═══════════ 모드 4 : 올해의운세 (8장) ═══════════ */
 export function renderYearly(A, job = "직장인") {
+  job = escapeHtml(job); // 저장형 XSS 차단 — job은 HTML로 주입됨 (第五章 직장운)
   const r = A.r, ds = A.ds, db = A.db;
   const e = A.elems, maxE = e.indexOf(Math.max(...e)), minE = e.indexOf(Math.min(...e));
   const thisYear = r.currentYear;

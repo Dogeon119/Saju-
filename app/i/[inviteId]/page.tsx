@@ -24,9 +24,15 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { inviteId } = await params;
   const inv = await loadInvite(inviteId);
-  if (!inv) return { title: "초대장을 찾을 수 없어요" };
+  if (!inv) return { title: "초대장을 찾을 수 없어요", robots: { index: false, follow: false } };
   const d = "생년월일만 알려 주면 두 사람의 궁합 감정서가 바로 펼쳐져요. 가입 필요 없음.";
-  return { title: "궁합 초대장", description: d, openGraph: { title: "월하 — 궁합 초대장이 도착했어요", description: d } };
+  // 개인 초대 링크 — 검색 색인 제외
+  return {
+    title: "궁합 초대장",
+    description: d,
+    robots: { index: false, follow: false },
+    openGraph: { title: "월하 — 궁합 초대장이 도착했어요", description: d },
+  };
 }
 
 export default async function InvitePage({ params }: { params: Promise<{ inviteId: string }> }) {

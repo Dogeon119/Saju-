@@ -48,7 +48,7 @@ export default function HomeGreeting() {
   return (
     <nav className="mode-list stagger" aria-label="오늘 위젯" style={{ marginBottom: 12 }}>
       <Link href="/daily" className="mode-row">
-        <span className="mk">日</span>
+        <span className="mk" aria-hidden="true">日</span>
         <span>
           <span className="mt">
             {name ? `${name}님의 오늘` : "오늘의 일진"} — <span className="gz-inline">{gz.hj}</span>
@@ -59,7 +59,7 @@ export default function HomeGreeting() {
       </Link>
       {recent && (
         <Link href={`/r/${recent.share_id}`} className="mode-row">
-          <span className="mk">{MODE_MK[recent.mode] ?? "冊"}</span>
+          <span className="mk" aria-hidden="true">{MODE_MK[recent.mode] ?? "冊"}</span>
           <span>
             <span className="mt">서재의 최근 감정서</span>
             <span className="md">
