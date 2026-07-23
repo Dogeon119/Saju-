@@ -5,6 +5,7 @@
 import { STEMS, BRANCHES, ELEM, EK, YUKHAP, SAMHAP, WONJIN, HAE, DOHWA } from "./constants";
 import { stemIdxOf, branchIdxOf, gzName, isSamhap, isChung, branchRelation, tenGod } from "./relations";
 import type { Person } from "./analyze";
+import { analyzeTongbyeon } from "./tongbyeon";
 import {
   DAY_LOVE,
   DAY_KEY,
@@ -79,8 +80,9 @@ function ohaengHTML(c){
 
 function baseChartSec(A){
   const adv=A.r.advanced;
-  const strengthKo={strong:'신강(身强) — 기운이 넉넉한 명',weak:'신약(身弱) — 주변의 도움이 힘이 되는 명',neutral:'중화(中和) — 균형 잡힌 명'}[adv.dayStrength.strength];
-  const yong=adv.yongsin.map(h=>{const i=stemIdxOf(h);return i>=0?STEMS[i].kr+'('+h+')':h;}).join(' · ');
+  const T=analyzeTongbyeon(A);
+  const strengthKo={strong:'신강(身强) — 기운이 강한 명',weak:'신약(身弱) — 주변의 힘을 빌리는 명',neutral:'중화(中和) — 균형 잡힌 명'}[T.strength.cls];
+  const yong=ELEM[T.yongElem];
   return pillarsHTML(A)+ohaengHTML(A.elems)+
     `<div class="gukguk-line">
       <span class="chip">격국 <b>${adv.geukguk}</b></span>

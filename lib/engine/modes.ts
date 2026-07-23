@@ -1,7 +1,7 @@
 // @ts-nocheck
 /** 4모드 리포트 렌더러 — 청월당 실제 목차 기반 (2026-07-12 개편 · 해요체 통일)
  *  모드: saju(정통사주 13장) · love(연애비책 7장) · gunghap(사주궁합 8장) · yearly(올해의운세 8장)
- *  말투: 20대 여성 상담사의 다정한 해요체 (월하노인의 예언 인용부만 예스러운 말투 유지)
+ *  말투: 20대 여성 상담사의 다정한 해요체 · 직설·현대형 (비유·예스러운 말투 최소화, 2026-07-23)
  *  스타일: ① 결론 먼저 ② 풀이 단위 항목화 ③ 용어·근거는 하단 분리 ④ 좋은 말만 하지 않기 */
 import { STEMS, BRANCHES, ELEM, EK, YUKHAP, DOHWA } from "./constants";
 import { stemIdxOf, branchIdxOf, gzName, isSamhap, isChung, branchRelation, tenGod } from "./relations";
@@ -48,9 +48,9 @@ function tallyTenGods(A) {
 }
 const dominantTG = A => tallyTenGods(A)[0]?.[0] ?? "비견";
 function yongTriple(A) {
-  const yi = stemIdxOf(A.r.advanced.yongsin[0]);
-  const yongE = yi >= 0 ? STEMS[yi].e : A.elems.indexOf(Math.max(...A.elems));
-  return { yongE, heeE: (yongE + 4) % 5, giE: (yongE + 3) % 5 };
+  // 통변 엔진의 정밀 용신(억부+조후) 사용 — ssaju의 부실한 정적 용신 대체
+  const T = analyzeTongbyeon(A);
+  return { yongE: T.yongElem, heeE: T.heeElem, giE: T.giElem };
 }
 function moneyStyleIdx(A) {
   const t = Object.fromEntries(tallyTenGods(A));
@@ -412,8 +412,8 @@ export function renderLoveSecret(A, relStatus = 0, relGap = 0) {
       ["피할 것", `${ELEM[giE]} 기운의 방전형 인연`],
       ["고칠 습관 하나", CAUTIONS[ds][0]],
     ]) +
-    `<p>여기까지 읽으셨다면, 이미 절반은 준비되신 거예요. 마지막으로 월하노인 할아버지의 전언 하나 전해 드릴게요.</p>` +
-    `<p class="prophecy">"${A.name}아, 매력은 이미 네 안에 다 있다. 남은 것은 시기와 자리뿐 — ${best.y}년의 바람이 불거든, ${EK[pe]}의 기운을 두른 사람 앞에서 세 걸음만 마주 걸어 나오너라."</p>`);
+    `<p>여기까지 읽으셨다면, 이미 절반은 준비되신 거예요. 마지막으로 딱 한 줄만 남길게요.</p>` +
+    `<p class="prophecy">"${A.name}님, 매력은 이미 다 갖추셨어요. 남은 건 타이밍과 자리뿐이에요 — ${best.y}년쯤 ${EK[pe]} 기운의 사람이 눈에 들어오면, 재지 말고 딱 세 걸음만 먼저 다가가 보세요."</p>`);
   return html;
 }
 
@@ -425,7 +425,7 @@ export function renderGunghapDeep(A, B, relStatus = 3) {
   const maxA = A.elems.indexOf(Math.max(...A.elems)), maxB = B.elems.indexOf(Math.max(...B.elems));
   const minA = A.elems.indexOf(Math.min(...A.elems)), minB = B.elems.indexOf(Math.min(...B.elems));
   const msA = MONEY_STYLE[moneyStyleIdx(A)], msB = MONEY_STYLE[moneyStyleIdx(B)];
-  const strongA = A.r.advanced.dayStrength, strongB = B.r.advanced.dayStrength;
+  const strongA = analyzeTongbyeon(A).strength, strongB = analyzeTongbyeon(B).strength;
   const chA = charms(A).length, chB = charms(B).length;
   const aControls = ["편재", "정재"].includes(tg);
   const bControls = ["편재", "정재"].includes(tgBA);
@@ -433,7 +433,7 @@ export function renderGunghapDeep(A, B, relStatus = 3) {
 
   const personBlock = (P, who, yT) => {
     const dom = dominantTG(P);
-    const st = STRENGTH_TXT[P.r.advanced.dayStrength.strength];
+    const st = STRENGTH_TXT[analyzeTongbyeon(P).strength.cls];
     const ipe = partnerElem(P);
     return grp(`${who}의 사주팔자 분석`) +
       fl(1, "기본 사주 분석", first(ILGAN_CHAR[P.ds], 3)) +
@@ -456,7 +456,7 @@ export function renderGunghapDeep(A, B, relStatus = 3) {
   html += sec("第一章", "기본 사주 분석", `${A.name} · ${B.name} 두 사람의 바탕`,
     `<div class="duo"><div>${pillarsHTML(A, `${A.name} · ${gzName(A.ds, A.db).slice(0, 2)}일주`)}</div><div>${pillarsHTML(B, `${B.name} · ${gzName(B.ds, B.db).slice(0, 2)}일주`)}</div></div>` +
     personBlock(A, A.name, yA) + personBlock(B, B.name, yB),
-    `${A.name}: ${STEMS[A.ds].kr}일간 ${STRENGTH_TXT[strongA.strength].what.split("—")[0].trim()} · ${B.name}: ${STEMS[B.ds].kr}일간 ${STRENGTH_TXT[strongB.strength].what.split("—")[0].trim()}`);
+    `${A.name}: ${STEMS[A.ds].kr}일간 ${STRENGTH_TXT[strongA.cls].what.split("—")[0].trim()} · ${B.name}: ${STEMS[B.ds].kr}일간 ${STRENGTH_TXT[strongB.cls].what.split("—")[0].trim()}`);
 
   const line = score >= 85 ? "하늘이 미리 이어 둔 인연" : score >= 70 ? "노력이 아깝지 않은 좋은 인연" : score >= 55 ? "가꾸는 만큼 자라는 인연" : score >= 40 ? "서로를 배우게 하는 인연" : "다름을 공부해야 하는 인연";
   const firstConfess = aControls ? A.name : bControls ? B.name : (STEMS[A.ds].yang ? A.name : B.name);
@@ -593,8 +593,8 @@ export function renderGunghapDeep(A, B, relStatus = 3) {
       ["혼인 적기", marryPick.length ? marryPick.map(y => y.year + "년").join(" · ") : "준비되는 해"],
       ["우리의 한 문장", "“그래도 네 편이야”"],
     ]) +
-    `<p>좋은 배합은 자랑거리가 아니라 출발선이고, 아쉬운 배합은 사형선고가 아니라 지도예요. 위에서 짚어 드린 규칙 두엇만 생활에 심어 두세요 — 다음 갈등이 왔을 때, 두 분은 이미 준비된 커플일 테니까요. 마지막으로 월하노인 할아버지의 전언이에요.</p>` +
-    `<p class="prophecy">"점수는 하늘이 매기나 인연은 사람이 완성하느니라. ${A.name}과 ${B.name}, 너희가 오늘 서로의 사주를 나란히 펼쳐 본 것 — 그 마음이 이미 이 궁합의 절반이니라."</p>`);
+    `<p>좋은 배합은 자랑거리가 아니라 출발선이고, 아쉬운 배합은 사형선고가 아니라 지도예요. 위에서 짚어 드린 규칙 두엇만 생활에 심어 두세요 — 다음 갈등이 왔을 때, 두 분은 이미 준비된 커플일 테니까요. 마지막으로 한마디만 남길게요.</p>` +
+    `<p class="prophecy">"점수는 시작일 뿐, 관계를 완성하는 건 결국 두 사람이에요. ${A.name}님과 ${B.name}님이 오늘 서로의 사주를 나란히 펼쳐 봤다는 것 — 그 관심이 이미 이 궁합의 절반이랍니다."</p>`);
   return html;
 }
 
@@ -724,7 +724,7 @@ export function renderYearly(A, job = "직장인") {
       <li>${MONTH_CAUTION[mainTG]}</li>
       <li>${sjStage >= 0 ? `${["들", "눌", "날"][sjStage]}삼재 — 과속 카메라 구간이에요. 속도만 줄이면 무탈해요` : `방심 — 순한 해일수록 마무리를 흘리는 게 유일한 흉이에요`}</li>
     </ul>` +
-    `<p class="prophecy">"${A.name}아, ${thisYear}년의 하늘은 이미 정해져 있으나 그 아래를 걷는 속도와 방향은 네 것이다. 길한 달에 움직이고 흉한 달에 쉬어 가거라 — 그것이 운을 부리는 자의 걸음이니라."</p>`,
+    `<p class="prophecy">"${A.name}님, ${thisYear}년의 큰 흐름은 정해져 있어도 그 위를 걷는 속도와 방향은 온전히 당신 몫이에요. 좋은 달엔 밀어붙이고 조심할 달엔 한 박자 쉬어 가기 — 그게 운을 내 편으로 쓰는 법이에요."</p>`,
     `길: ${keyword} / 흉: ${chungM.length ? chungM[0] + "월의 변동" : "방심"} — 여섯 문장이 올해의 전부`);
   return html;
 }
@@ -775,7 +775,7 @@ export function renderDaily(A) {
 
   html += sec("終章", "오늘의 한 줄", "",
     `<p>일진은 하루짜리 날씨예요. 오늘이 흐렸다면 내일은 다른 하늘이 뜨니까, 무거워하지 말고 우산 하나 챙기는 마음이면 충분해요.</p>
-    <p class="prophecy">"${A.name}아, 하루의 운은 아침에 정해지나 하루의 값은 저녁에 매겨지느니라. 오늘 하늘이 준 것을 어떻게 썼는지 — 그것만이 네 것이니라."</p>`,
+    <p class="prophecy">"${A.name}님, 오늘의 운은 아침에 정해져도 하루의 값은 저녁에 매겨져요. 주어진 하루를 어떻게 썼는지 — 결국 그것만 내 것으로 남아요."</p>`,
     T.head);
   return html;
 }
@@ -796,8 +796,8 @@ export function renderManse(A) {
     pillarsHTML(A) + ohaengHTML(A.elems) +
     `<div class="gukguk-line">
       <span class="chip">격국 <b>${adv.geukguk}</b></span>
-      <span class="chip">${{ strong: "신강", weak: "신약", neutral: "중화" }[adv.dayStrength.strength]} (${adv.dayStrength.score})</span>
-      <span class="chip">용신 <b>${adv.yongsin.join(" · ")}</b></span>
+      <span class="chip">${{ strong: "신강", weak: "신약", neutral: "중화" }[analyzeTongbyeon(A).strength.cls]} (${analyzeTongbyeon(A).strength.score})</span>
+      <span class="chip">용신 <b>${ELEM[analyzeTongbyeon(A).yongElem]}(${adv.yongsin.join("·")})</b></span>
       <span class="chip">공망 <b>${A.r.gongmang.branchesKo.join("·")}</b></span>
     </div>`,
     `일간 ${STEMS[A.ds].kr}(${STEMS[A.ds].hj}) · 일지 ${BRANCHES[A.db].kr}(${BRANCHES[A.db].hj})`);
