@@ -1,7 +1,17 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import GlobalTabs from "@/components/GlobalTabs";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 import "./globals.css";
+
+/* Pretendard 셀프호스팅 (next/font/local) — CDN 미로딩 시 시스템 폰트 폴백되던 문제 제거.
+ *  가변폰트 하나로 전 화면(--serif·--sans 모두 Pretendard). variable로 --font-pretendard 주입. */
+const pretendard = localFont({
+  src: "./fonts/PretendardVariable.woff2",
+  variable: "--font-pretendard",
+  display: "swap",
+  weight: "45 920",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -76,12 +86,8 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" className={pretendard.variable} suppressHydrationWarning>
       <head>
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
-        />
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
         <script
           type="application/ld+json"
