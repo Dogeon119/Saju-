@@ -6,6 +6,7 @@
 import { STEMS, BRANCHES, ELEM, EK, YUKHAP, DOHWA } from "./constants";
 import { stemIdxOf, branchIdxOf, gzName, isSamhap, isChung, branchRelation, tenGod } from "./relations";
 import { escapeHtml, type Person } from "./analyze";
+import { analyzeTongbyeon } from "./tongbyeon";
 import {
   sec, paras, tocHTML, pillarsHTML, ohaengHTML, baseChartSec, wolunSolarMonth,
   charms, partnerElem, partnerStars, starName,
@@ -112,33 +113,72 @@ function marryYearsFor(P, n = 6) {
 /* ═══════════ 모드 1 : 정통사주 (13장) ═══════════ */
 export function renderSaju(A) {
   const r = A.r, ds = A.ds, db = A.db;
-  const e = A.elems, maxE = e.indexOf(Math.max(...e)), minE = e.indexOf(Math.min(...e));
+  const T = analyzeTongbyeon(A);
+  const s = T.strength, cl = T.climate;
+  const strengthName = { strong: "신강(身强)", weak: "신약(身弱)", neutral: "중화(中和)" }[s.cls];
+  const maxE = T.dominantElem, minE = T.weakestElem;   // 지장간 가중 세력 기준(더 정확)
   let html = "";
 
-  html += sec("第一章", "나의 사주팔자", `${A.y}년 ${A.m}월 ${A.d}일생 · ${BRANCHES[r.pillarDetails.year.branchIdx].animal}띠 · ${r.currentAge}세`,
-    baseChartSec(A));
+  /* ── 第一章 : 원국 + 통변 뼈대(신강신약·용신·조후) — 정확도의 출발점 ── */
+  const basis = [s.deukryeong ? "달의 기운을 얻고(득령)" : null, s.deukji ? "일지에 뿌리를 두고(득지)" : null, s.deukse ? "같은 편 기운이 많아(득세)" : null].filter(Boolean);
+  const noBasis = [!s.deukryeong ? "달의 기운을 못 얻고(실령)" : null, !s.deukji ? "일지 뿌리가 여리고(실지)" : null, !s.deukse ? "돕는 기운이 적어(실세)" : null].filter(Boolean);
+  const strengthBody =
+    `<p>먼저 사주의 뼈대부터 세울게요. 당신은 <strong>${strengthName}</strong> 사주예요.</p>` +
+    `<p>${s.cls === "strong"
+      ? `${basis.join(", ")} 일간의 힘이 넉넉해요. 스스로 판을 끌고 가는 추진력이 강점이지만, '내 방식'이 세서 부딪히는 게 숙제죠. 이런 사주는 넘치는 기운을 <em>덜어내는</em> 쪽으로 균형을 잡아요.`
+      : s.cls === "weak"
+        ? `${noBasis.join(", ")} 일간을 돕는 기운이 부족한 편이에요. 혼자보다 함께일 때, 좋은 사람과 환경 위에서 훨씬 강해지는 유형이죠. 이런 사주는 부족한 힘을 <em>채워 주는</em> 쪽으로 균형을 잡아요.`
+        : `힘이 넘치지도 모자라지도 않은 균형형이에요. 명리에서 가장 귀하게 치는 중화의 그릇이라, 상황 따라 밀고 당기는 조절력이 강점이랍니다.`}</p>` +
+    kv([["신강·신약", `${strengthName} · 세력 점수 ${s.score}`], ["득령·득지·득세", `${s.deukryeong ? "○ 득령" : "× 실령"} · ${s.deukji ? "○ 득지" : "× 실지"} · ${s.deukse ? "○ 득세" : "× 실세"}`], ["월지 기운(운성)", s.monthStage || "-"]]) +
+    note("신강·신약은 모든 풀이의 출발점이에요. 일간이 강하면 덜어서, 약하면 채워서 균형을 잡는데 — 그 '균형의 열쇠'가 바로 다음의 용신이랍니다.");
+  const yongBody =
+    `<p>당신의 용신(用神)은 <strong>${ELEM[T.yongElem]}</strong>이에요. ${T.yongReason}.</p>` +
+    `<p>도출한 방법은 <strong>${T.yongMethod}</strong>이고요. 용신은 개운의 핵심이라 — 색은 <strong>${COLOR[T.yongElem]}</strong>, 방향은 <strong>${DIR[T.yongElem]}</strong>, 계절은 ${["봄", "여름", "환절기", "가을", "겨울"][T.yongElem]}이 평생 당신을 돕는 부적이 돼요.</p>` +
+    kv([["용신(用神)", `${ELEM[T.yongElem]} — 나를 살리는 기운`], ["희신(喜神)", `${ELEM[T.heeElem]} — 용신을 돕는 기운`], ["기신(忌神)", `${ELEM[T.giElem]} — 균형을 무너뜨리는 기운`]]) +
+    note("용신은 '가장 필요한 기운', 희신은 '용신을 돕는 기운', 기신은 '피해야 할 기운'이에요. 색·방향·사람·시기를 고를 때 이 셋이 나침반이 된답니다.");
+  const johuBody =
+    `<p>당신은 <strong>${cl.season}</strong>에 태어났어요 — 기운의 온도로는 <strong>${cl.warmth}</strong>의 자리예요.</p>` +
+    `<p>${cl.needElem != null
+      ? `${cl.season}의 사주는 ${ELEM[cl.needElem]}의 기운이 돌아야 꽃이 펴요. ${cl.critical ? `지금 원국엔 그 기운이 귀해서 <strong>조후가 무엇보다 급한 사주</strong>예요 — ${ELEM[cl.needElem]}을 채우는 색·음식·사람이 곧 개운이에요.` : `${ELEM[cl.needElem]}을 곁에 두면 사주가 한결 부드럽게 흐른답니다.`}`
+      : `계절의 한난이 극단으로 치우치지 않아 조후의 부담이 적은 편안한 구조예요. 넘치고 모자람(억부)의 균형에 집중하시면 돼요.`}</p>`;
+  html += sec("第一章", "나의 사주팔자", `${A.y}년 ${A.m}월 ${A.d}일생 · ${BRANCHES[r.pillarDetails.year.branchIdx].animal}띠 · ${r.currentAge}세 · ${strengthName}`,
+    baseChartSec(A) +
+    grp("사주의 큰 그림 — 통변의 뼈대") +
+    fl(1, "신강·신약 — 내 기운의 무게", strengthBody) +
+    fl(2, "용신 — 내 사주를 살리는 열쇠", yongBody) +
+    fl(3, "조후 — 계절이 준 기질", johuBody),
+    `${strengthName} · 용신 ${ELEM[T.yongElem]}(${T.yongMethod.split("(")[0]}) · ${cl.season} ${cl.warmth}`);
 
-  html += sec("第二章", "일주와 오행 분석", `일주 ${gzName(ds, db)}`,
+  html += sec("第二章", "일주와 오행 분석", `일주 ${gzName(ds, db)} · ${T.dayRooted ? "통근(뿌리 있음)" : "무근에 가까움"}`,
     paras(ILGAN_CHAR[ds]) +
-    `<p><strong>오행의 저울</strong>도 볼게요 — ${ELEM[maxE]}이 가장 강하고, ${ELEM[minE]}이 가장 약해요.</p>` +
+    `<p><strong>일주로 좁혀 볼게요.</strong> 하늘 기운 ${STEMS[ds].kr}(${STEMS[ds].hj})가 땅자리 ${BRANCHES[db].kr}(${BRANCHES[db].hj}) 위에 앉은 것 — 이게 당신의 일주예요. ${T.rootNote}.</p>` +
+    `<p><strong>오행의 저울</strong>이에요. 지지 속에 숨은 지장간까지 넣어 무게를 달면 <strong>${ELEM[maxE]} ${T.powerPct[maxE]}%</strong>로 가장 크고 <strong>${ELEM[minE]} ${T.powerPct[minE]}%</strong>로 가장 작아요 — 겉글자만 세는 것과 달리 숨은 기운까지 반영한 진짜 세력이랍니다.</p>` +
     paras(ELEM_GEN_EXCESS[maxE]) + paras(ELEM_GEN_LACK[minE]),
     `${STEMS[ds].kr}(${STEMS[ds].hj}) 일간 — ${ILGAN_META[ds]}`);
 
   const tally = tallyTenGods(A);
   const top = tally[0], second = tally[1];
+  const topYc = top ? T.yukchin[top[0]] : "";
   html += sec("第三章", "십성 분석", "원국에 드러난 재능의 지도",
     `<div class="badges">${tally.map(([n, c]) => `<span class="badge blue">${n} ×${c}</span>`).join("")}</div>` +
     (top ? paras(TEN_GOD_PROFILE[top[0]]) : "<p>원국의 십성이 고르게 분포해 있어요 — 다재다능형이랍니다.</p>") +
     (second ? paras(TEN_GOD_PROFILE[second[0]]) : "") +
-    note("십성(十星)이란? 일간(나)을 기준으로 다른 글자들이 맺는 10가지 관계예요. 많이 나타난 십성일수록 인생에서 자주 쓰게 되는 재능이자 과제랍니다."),
-    top ? `가장 강한 별: ${top[0]}` : "고른 분포 — 다재다능형");
+    (topYc ? `<p><strong>육친(六親)으로도 읽혀요</strong> — ${top[0]}은 당신에게 「${topYc}」의 자리예요. 이 별이 강할수록 그 인연이 인생에서 큰 비중을 차지한답니다.</p>` : "") +
+    (T.combos.length
+      ? `<p><strong>그런데 십성은 '개수'보다 '짜임'이 중요해요.</strong> 당신 원국은 이런 구조를 이뤄요:</p><ul class="pts blue">${T.combos.map(c => `<li><strong>${c.label}</strong> — ${c.desc}</li>`).join("")}</ul>`
+      : `<p><strong>십성의 짜임</strong>은 한 조합이 도드라지기보다 고르게 퍼진 편이라, 특정 틀에 갇히지 않는 유연함이 오히려 강점이에요.</p>`) +
+    note("십성(十星)이란? 일간(나)을 기준으로 다른 글자들이 맺는 10가지 관계예요. 개수도 중요하지만, 관인상생·식상생재처럼 별들이 서로 이어지는 '짜임'이 그 사람의 진짜 그림을 그린답니다."),
+    top ? `가장 강한 별: ${top[0]}${T.combos[0] ? " · " + T.combos[0].label : ""}` : "고른 분포 — 다재다능형");
 
   const bong = r.stages12.bong;
+  const STAGE_STRONG = ["장생", "관대", "건록", "제왕"], STAGE_REST = ["사", "묘", "절", "병", "쇠"];
   html += sec("第四章", "십이운성 분석", "내 기운의 계절",
     kv([["일주(나)", bong.day], ["월주(사회)", bong.month], ["년주(초년)", bong.year], ["시주(말년)", A.hourKnown ? bong.hour : "시간 모름"]]) +
     paras(UNSEONG[bong.day] ?? "") +
-    note("십이운성이란? 기운의 일생(탄생→왕성→갈무리)을 12단계로 나눈 거예요. 일주의 운성이 당신의 기본 에너지 리듬이 돼요."),
-    `당신의 기운은 지금 「${bong.day}」의 계절`);
+    `<p><strong>자리마다의 운성</strong>도 흐름을 말해 줘요 — 사회 활동의 자리인 월주는 「${bong.month}」, 초년의 년주는 「${bong.year}」${A.hourKnown ? `, 말년의 시주는 「${bong.hour}」` : ""}예요. ${STAGE_STRONG.includes(bong.month) ? "특히 사회의 자리(월주)에 힘이 실려 있어, 바깥일에서 기운을 크게 쓰는 구조랍니다." : STAGE_REST.includes(bong.month) ? "사회의 자리(월주)는 힘을 아끼는 계절이라, 앞에 나서 소모하기보다 깊이로 승부하는 자리가 잘 맞아요." : "사회의 자리(월주)는 무난한 흐름이라, 기복 없이 꾸준히 쌓는 스타일이 어울려요."}</p>` +
+    `<p>이 운성은 앞서 본 <strong>${strengthName}</strong>과도 맞물려요 — ${STAGE_STRONG.includes(bong.month) ? "월지 운성마저 왕성해 기운이 더욱 실린 흐름이에요." : "월지 운성이 힘을 아끼는 계절이라, 그만큼 주변의 도움이 큰 힘이 되는 구조예요."}</p>` +
+    note("십이운성이란? 기운의 일생(탄생→왕성→갈무리)을 12단계로 나눈 거예요. 일주 운성은 기본 리듬, 월주 운성은 사회에서 쓰는 힘의 세기를 말해 준답니다."),
+    `기운은 지금 「${bong.day}」의 계절 · 사회의 자리는 「${bong.month}」`);
 
   const salSet = new Set();
   for (const k of ["year", "month", "day", "hour"]) {
@@ -147,9 +187,16 @@ export function renderSaju(A) {
     (r.sals[k].specialSals || []).forEach(s => salSet.add(s));
   }
   const sals = [...salSet].filter(s => SAL12[s] || SAL_DESC[s]).slice(0, 5);
+  const hyungsin = (r.advanced.sinsal.hyungsin || []);
+  const HYUNGSIN_DESC = {
+    양인: "양인(羊刃)은 칼처럼 강한 기운의 별이에요 — 승부와 위기의 순간에 폭발력이 되지만, 평소엔 그 날카로움을 다스리는 게 숙제예요. 운동이나 전문 기술처럼 힘을 쏟을 통로를 두면 오히려 큰 복이 된답니다.",
+    겁살: "겁살(劫殺)은 '빼앗김'을 조심하라는 별이에요 — 보증·충동 지출·급한 결정이 통로거든요. 큰돈 결정은 하루 재우기, 이것 하나면 오히려 위기 감지 센서가 돼요.",
+  };
   html += sec("第五章", "신살 분석", "살(殺)은 경고이자 재능이에요",
     `<div class="badges">${sals.map(s => `<span class="badge">${s}</span>`).join("")}</div>` +
     sals.map(s => paras(SAL12[s] ?? SAL_DESC[s])).join("") +
+    (hyungsin.length ? `<p><strong>흉신(凶神)</strong>도 솔직하게 짚어 드릴게요.</p>` + hyungsin.map(h => `<p>${HYUNGSIN_DESC[h] ?? `${h}이 있어요 — 강하게 쓰면 무기가, 방치하면 탈이 되는 기운이니 힘을 쏟을 통로를 만들어 다스려 주세요.`}</p>`).join("") : "") +
+    (T.wonguk.length ? `<p><strong>원국 안의 만남</strong>도 있어요 — ${T.wonguk.map(w => `${w.a}·${w.b}의 ${w.kind}`).join(", ")}이에요. 원국 지지끼리 엮이는 자리는 그 자리가 가리키는 인생 영역(년지=집안·초년 / 월지=직업·사회 / 일지=배우자 / 시지=자녀·말년)에서 변화와 긴장이 잦다는 신호랍니다.</p>` : "") +
     note("신살(神殺)이란? 사주의 특수 기호예요. 나쁜 뜻의 살(殺)도 현대 명리에서는 '주의하면 재능이 되는 힘'으로 읽는답니다."),
     sals.length ? `핵심 신살: ${sals.slice(0, 3).join(" · ")}` : "드러난 신살이 적은 담백한 원국");
 
@@ -163,53 +210,81 @@ export function renderSaju(A) {
   const moneyStars = ["정재", "편재"];
   const moneyCount = tally.filter(([n]) => moneyStars.includes(n)).reduce((a, [, c]) => a + c, 0);
   const wCat = moneyCount === 0 ? 0 : moneyCount <= 2 ? 1 : 2;
-  const moneyYears = seyunRows(A).filter(s => moneyStars.includes(s.tenGodStem) || moneyStars.includes(s.tenGodBranch));
-  html += sec("第七章", "재물운", `원국의 재성 ${moneyCount}개`,
+  const moneyYears = seyunRows(A).filter(sy => moneyStars.includes(sy.tenGodStem) || moneyStars.includes(sy.tenGodBranch));
+  const jaeElem = (STEMS[ds].e + 2) % 5;   // 재성 오행 = 일간이 극하는 오행
+  const wealthStrategy =
+    T.combos.find(c => c.key === "재다신약") ? "재다신약(財多身弱) 구조라, 돈을 좇기 전에 내 힘(실력·건강·사람)을 먼저 키우는 게 순서예요. 그릇이 커지면 그때 재물이 담기거든요 — 큰 투자·보증은 특히 신중히요." :
+    T.combos.find(c => c.key === "식상생재") ? "식상생재(食傷生財) 구조라, 내 재능을 '상품'으로 바꾸는 길에서 돈이 나와요. 콘텐츠·기술·서비스처럼 만들어 파는 형태를 꼭 하나 만들어 보세요." :
+    s.cls === "strong" ? "기운이 강한 사주라 재성(돈)을 직접 다루고 굴리는 힘이 있어요 — 다만 넘치는 자신감이 과욕이 되지 않게, 수익의 일부는 손 못 대게 묶는 장치를 두세요." :
+    "기운이 여린 편이라 큰 한 방보다 꾸준한 축적과 좋은 파트너 위에서 재물이 커져요. 함께 벌고 나누는 구조가 이 사주엔 훨씬 안전해요.";
+  const jaeYong = T.yongElem === jaeElem ? "그게 바로 <strong>용신</strong>이라 — 돈을 버는 활동 자체가 사주를 살리는 개운이 돼요. 일할수록 운이 트이는 복이죠." :
+    T.giElem === jaeElem ? "그게 <strong>기신</strong>에 해당해서 — 돈에 과하게 매달리면 오히려 균형이 흔들려요. '적당히 벌고 잘 지키기'가 이 사주 재물의 정답이에요." :
+    "용신도 기신도 아니라 — 재물은 담담하게, 실력과 신용을 앞세우면 자연히 따라오는 구조예요.";
+  html += sec("第七章", "재물운", `원국의 재성 ${moneyCount}개 · ${strengthName}`,
     paras(WEALTH_TXT[wCat]) +
+    `<p><strong>당신 사주에 맞춘 재물 전략</strong>이에요 — ${wealthStrategy}</p>` +
+    `<p>당신의 재성(財)은 <strong>${ELEM[jaeElem]}</strong> 기운인데요 — ${jaeYong}</p>` +
     (moneyYears.length
-      ? `<p><strong>재성이 드는 해</strong>도 짚어 드릴게요.</p><ul class="pts gold">${moneyYears.map(s => `<li><strong>${s.year}년 ${s.ganzhi}</strong> — 재물의 문이 열리는 해예요. 협상·투자·수입원 확장은 이 해에 하세요.</li>`).join("")}</ul>`
+      ? `<p><strong>재성이 드는 해</strong>도 짚어 드릴게요.</p><ul class="pts gold">${moneyYears.map(sy => `<li><strong>${sy.year}년 ${sy.ganzhi}</strong> — 재물의 문이 열리는 해예요. 협상·투자·수입원 확장은 이 해에 하세요.</li>`).join("")}</ul>`
       : `<p>앞으로 5년간 재성이 직접 드는 해는 없어요 — 이 기간은 벌기보다 <strong>몸값을 올리는 구간</strong>으로 쓰시는 게 정답이에요.</p>`),
     ["돈은 때가 만든다 — 재성운의 해를 노릴 것", "꾸준함이 재산 — 적립이 체질", "버는 재능은 충분 — 승부는 지키기"][wCat]);
 
   const pStars = partnerStars(A);
   const pCount = tally.filter(([n]) => pStars.includes(n)).reduce((a, [, c]) => a + c, 0);
+  const spouseRel = T.wonguk.filter(w => w.a === "일지" || w.b === "일지");
   html += sec("第八章", "연애·결혼운", `배우자별(${starName(A)}) ${pCount}개 · 배우자궁 ${BRANCHES[db].kr}(${BRANCHES[db].hj})`,
     `<p>${first(DAY_LOVE[ds], 2)}</p>` +
     `<p><strong>배우자궁</strong>은 이렇게 읽혀요 — ${SP_KEY[db]}.</p>` +
     `<p>${pCount === 0 ? "배우자별이 원국에 숨어 있어서, 인연은 운이 실어 오는 때에 움직여요. 조급함이 가장 큰 적이에요."
       : pCount <= 2 ? "배우자별이 알맞게 자리해서 혼인 인연이 안정적으로 예비되어 있어요. 과제는 찾기가 아니라 알아보기예요."
       : "배우자별이 여럿이라 인연은 많고 선택이 과제예요. 비교를 멈추는 순간이 혼인운이 열리는 순간이랍니다."}</p>` +
+    (spouseRel.length ? `<p><strong>배우자궁의 자리 기운</strong>도 봐요 — 원국에서 일지가 ${spouseRel.map(w => `${w.a === "일지" ? w.b : w.a}와 ${w.kind}`).join(", ")}을 이뤄요. ${spouseRel.some(w => w.hj === "沖") ? "배우자궁이 충을 맞으면 인연에 변동·이동수가 따르지만, 그 흔들림 속에서 인연이 들어오기도 해요 — 변화를 너무 두려워 마세요." : spouseRel.some(w => w.hj === "合") ? "배우자궁이 합을 이루면 인연이 몸에 잘 붙는 다정한 구조예요." : "배우자궁에 형·파가 닿으면 관계에 다듬을 지점이 있다는 신호니, 대화의 규칙을 미리 정해 두면 훨씬 부드러워져요."}</p>` : "") +
     `<p>더 깊은 풀이는 <em>연애비책</em>·<em>사주궁합</em> 모드에서 장별로 다뤄 드릴게요.</p>`,
     DAY_KEY[ds]);
 
   const gk = r.advanced.geukguk;
-  html += sec("第九章", "직업운", `격국 「${gk}」`,
+  const workStyle = s.cls === "strong" ? "기운이 강해 <strong>주도적으로 이끄는 자리</strong>, 내 이름을 건 일에서 빛나요. 위에서 시키는 대로만 하는 자리는 오래 못 견디는 편이에요."
+    : s.cls === "weak" ? "함께 <strong>조율하고 받쳐 주는 자리</strong>, 좋은 조직·팀·상사 위에서 실력이 배가돼요. 무리한 단독 승부보다 든든한 판을 고르는 안목이 성공의 열쇠예요."
+      : "이끌기와 맞추기를 오가는 <strong>조절형</strong>이라 기획·중간관리·조율처럼 양쪽을 잇는 자리에 강해요.";
+  const geukExtra = T.combos.find(c => c.key === "관인상생") ? " 게다가 관인상생 구조까지 있어, 조직·자격·공공의 세계에서 특히 유리하답니다."
+    : T.combos.find(c => c.key === "식상생재") ? " 식상생재 구조라 '내 재능으로 버는' 창작·사업 쪽 적성이 더해지고요."
+      : T.combos.find(c => c.key === "비겁태왕") ? " 비겁이 왕성한 구조라 조직보다 내 판(창업·전문 프리랜스)에서 훨씬 크게 자라요." : "";
+  html += sec("第九章", "직업운", `격국 「${gk}」 · ${strengthName}`,
     paras(CAREER_GEUKGUK[gk] ?? CAREER_GEUKGUK["기타"]) +
     (top ? `<p><strong>재능의 무기</strong>도 하나 있어요 — ${first(TEN_GOD_PROFILE[top[0]].split(", ").slice(1).join(", ") || TEN_GOD_PROFILE[top[0]], 2)}</p>` : "") +
-    note("격국(格局)이란? 사주 전체의 구조가 어느 방향으로 짜여 있는지를 나타내는 틀이에요. 직업 적성의 큰 지도로 읽으시면 돼요."),
+    `<p><strong>일하는 방식</strong>도 신강·신약이 갈라 줘요 — ${workStyle}${geukExtra}</p>` +
+    note("격국(格局)이란? 사주 전체의 구조가 어느 방향으로 짜여 있는지를 나타내는 틀이에요. 여기에 신강·신약과 십성 짜임을 겹쳐 보면 직업 적성의 지도가 또렷해진답니다."),
     (CAREER_GEUKGUK[gk] ?? CAREER_GEUKGUK["기타"]).split("—")[1]?.split(".")[0]?.trim() ?? "");
 
-  html += sec("第十章", "건강운", "오행이 가리키는 몸의 주의보",
+  const healthCare = ["아침 산책과 스트레칭·초록 채소", "햇볕과 웃는 자리·따뜻한 음식", "규칙적인 식사와 정돈된 공간", "유산소와 호흡 운동", "충분한 수분과 보온·숙면"];
+  html += sec("第十章", "건강운", "오행과 계절이 가리키는 몸의 주의보",
     paras(HEALTH_BY_ELEM[maxE]) +
     `<p><strong>부족한 ${ELEM[minE]}의 영역도 같이 챙겨 주세요.</strong> ${ORGANS[minE]} 쪽이 약해지기 쉬운 체질이거든요.</p>` +
+    `<p><strong>계절(조후) 처방</strong>이에요 — ${cl.needElem != null ? `${cl.warmth} 기운의 사주라 ${ELEM[cl.needElem]}을 채우는 생활, 즉 <strong>${healthCare[cl.needElem]}</strong>이 몸의 보약이에요.` : "한난이 치우치지 않아 극단적 관리보다 규칙적인 생활이 답이에요."} 여기에 용신 ${ELEM[T.yongElem]}을 돕는 음식(${FOODS[T.yongElem]})을 가까이하시면 더 좋고요.</p>` +
     note("명리의 건강론은 진단이 아니라 체질 경향이에요. 증상이 있다면 병원이 먼저예요!"),
-    `${ELEM[maxE]} 과다 · ${ELEM[minE]} 부족 — 해당 장기 관리가 개운`);
+    `${ELEM[maxE]} 과다 · ${ELEM[minE]} 부족 · ${cl.warmth} — 조후로 균형 잡기`);
 
   const du = r.daeun.current;
   const duNext = r.daeun.list.find(d => d.startAge > (du?.endAge ?? 0));
-  html += sec("第十一章", "대운 — 10년의 큰 물줄기", du ? `현재 ${du.ganzhi} 대운 (${du.startAge}~${du.endAge}세)` : "",
+  html += sec("第十一章", "대운 — 10년의 큰 물줄기", du ? `현재 ${du.ganzhi} 대운 (${du.startAge}~${du.endAge}세)${T.daeun ? " · " + T.daeun.favor + "운" : ""}` : "",
     (du ? paras(DAEUN_TG[du.stemTenGod] ?? "") +
-      kv([["대운 간지", du.ganzhi], ["기간", `${du.startAge}세 ~ ${du.endAge}세`], ["천간 십성", du.stemTenGod], ["지지 십성", du.branchTenGod]]) : "<p>대운 정보를 계산할 수 없어요.</p>") +
+      kv([["대운 간지", du.ganzhi], ["기간", `${du.startAge}세 ~ ${du.endAge}세`], ["천간 십성", du.stemTenGod], ["지지 십성", du.branchTenGod]]) +
+      (T.daeun ? `<p><strong>이 대운과 내 원국의 만남</strong>이에요 — ${T.daeun.note}.${T.daeun.clash ? ` 게다가 대운이 ${T.daeun.clash}해서, ${T.daeun.clash.includes("일지") ? "배우자·가정" : T.daeun.clash.includes("월지") ? "직업·사회 자리" : T.daeun.clash.includes("년지") ? "집안·뿌리" : "환경"}에 변동이 도드라지는 10년이니 큰 결정은 한 번 더 점검하세요.` : ""}</p>` : "")
+      : "<p>대운 정보를 계산할 수 없어요.</p>") +
     (duNext ? `<p><strong>다음 대운 미리보기</strong>도 드릴게요 — ${duNext.startAge}세부터 ${duNext.ganzhi} 대운(${duNext.stemTenGod})으로 바뀌어요. ${(DAEUN_TG[duNext.stemTenGod] ?? "").split("—")[0].trim()}의 흐름이 예약되어 있는 셈이죠.</p>` : ""),
-    du ? `지금은 ${(DAEUN_TG[du.stemTenGod] ?? "").split("—")[0].trim()} 한가운데` : "");
+    du ? `${T.daeun ? T.daeun.favor + "운 · " : ""}지금은 ${(DAEUN_TG[du.stemTenGod] ?? "").split("—")[0].trim()} 한가운데` : "");
 
   const rows5 = seyunRows(A);
   const sj = samjaeBranches(r.pillarDetails.year.branchIdx);
   const sjRows = rows5.map(s => ({ ...s, stage: sj ? sj.indexOf(branchIdxOf(s.branch)) : -1 }));
   const hasSj = sjRows.some(s => s.stage >= 0);
+  const yongYears = sjRows.filter(row => { const se = stemIdxOf(row.stem); return se >= 0 && (STEMS[se].e === T.yongElem || STEMS[se].e === T.heeElem); });
   html += sec("第十二章", "향후 5년 연운과 삼재", `${rows5[0]?.year}년 ~ ${rows5[rows5.length - 1]?.year}년`,
     `<div class="cal">${sjRows.map(s =>
       `<div class="cal-row"><span class="cm">${s.year}년 ${s.ganzhi}</span><span class="ct2">${s.tenGodStem}·${s.tenGodBranch}</span><span class="cd">${SEYUN_TG[s.tenGodStem] ?? ""}${s.stage >= 0 ? ` <em>[${["들", "눌", "날"][s.stage]}삼재]</em>` : ""}</span></div>`).join("")}</div>` +
+    (yongYears.length
+      ? `<p><strong>용신·희신이 드는 해</strong>도 짚어 드릴게요 — <strong>${yongYears.map(row => row.year + "년").join(" · ")}</strong>이에요. 이 해엔 ${ELEM[T.yongElem]}·${ELEM[T.heeElem]} 기운이 하늘에서 도와, 중요한 시작·계약·이동에 순풍이 붙어요.</p>`
+      : `<p>앞으로 5년 안엔 용신(${ELEM[T.yongElem]})이 천간으로 직접 드는 해는 없어요 — 대신 ${COLOR[T.yongElem]} 색과 ${DIR[T.yongElem]} 방향을 생활에서 챙기며 힘을 보태세요.</p>`) +
     (hasSj ? sjRows.filter(s => s.stage >= 0).slice(0, 1).map(s => paras(SAMJAE_STAGE[s.stage])).join("") : paras(SAMJAE_NONE)) +
     note(SAMJAE_NOTE),
     hasSj ? `삼재 구간 포함 — 과속만 피하면 무탈` : `5년 내 삼재 없음 — 파도만 골라 탈 것`);
@@ -219,7 +294,7 @@ export function renderSaju(A) {
     const sc = y => (posTG.includes(y.tenGodStem) ? 2 : 0) + (posTG.includes(y.tenGodBranch) ? 2 : 0) - (y.stage >= 0 ? 1 : 0);
     return sc(b) > sc(a) ? b : a;
   }, sjRows[0]);
-  const { yongE } = yongTriple(A);
+  const yongE = T.yongElem;   // 통변 엔진의 정밀 용신 사용
   html += sec("終章", "월하노인에게 묻다 — 세 가지 문답", "가장 많이 받는 질문 셋, 당신 사주로 답해 드릴게요",
     `<div class="qa"><p class="q">Q1. 흐름은 언제 풀리나요?</p><p class="a">${bestYear ? `<strong>${bestYear.year}년 ${bestYear.ganzhi}년</strong>이 5년 중 가장 순한 해예요. ${SEYUN_TG[bestYear.tenGodStem] ?? ""} — 큰 결정과 시작은 이 해에 실으세요.` : "5년의 흐름이 고른 편이에요."}</p></div>` +
     `<div class="qa"><p class="q">Q2. 무엇을 가장 조심해야 하나요?</p><p class="a">${CAUTIONS[ds][0]} — 당신 일간의 오래된 버릇이에요. 운이 나쁜 해가 아니라, 이 버릇이 나오는 순간이 진짜 위기랍니다.</p></div>` +
