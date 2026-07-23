@@ -186,35 +186,35 @@ export function analyzeTongbyeon(A: Person): Tongbyeon {
 
   if (jongwang) {
     yongElem = dominantElem; yongMethod = "전왕(專旺)";
-    yongReason = `한 기운(${ELEM_KO[dominantElem]})이 원국을 압도해, 거스르기보다 그 세력을 따르는 전왕의 구조예요`;
+    yongReason = `한 기운(${ELEM_KO[dominantElem]})이 사주를 압도할 만큼 세서, 거스르기보다 그 센 기운의 편에 서는 게 유리한 사주예요`;
   } else if (strong) {
     if (roles.inseong >= roles.bigyeop) {
-      yongElem = wealthElem; yongReason = `인성이 두터워 강해진 사주라, 그 인성을 덜어 주는 재성(${ELEM_KO[wealthElem]})이 용신이에요`;
+      yongElem = wealthElem; yongReason = `나를 받쳐 주는 기운이 두터워 강해진 사주라, 그걸 적당히 덜어 주는 ${ELEM_KO[wealthElem]}(돈·활동 기운)이 필요해요`;
     } else if (roles.gwanseong >= 0.6) {
-      yongElem = offElem; yongReason = `비겁이 왕성해 강해진 사주라, 그 힘을 눌러 주는 관성(${ELEM_KO[offElem]})이 용신이에요`;
+      yongElem = offElem; yongReason = `나와 같은 편 기운이 세서 강해진 사주라, 그 힘을 눌러 잡아 주는 ${ELEM_KO[offElem]}(일·책임 기운)이 필요해요`;
     } else {
-      yongElem = foodElem; yongReason = `기운이 넘치는데 눌러 줄 관성이 약해, 힘을 흘려보내는 식상(${ELEM_KO[foodElem]})이 용신이에요`;
+      yongElem = foodElem; yongReason = `기운은 넘치는데 눌러 줄 게 약해서, 그 힘을 밖으로 풀어 주는 ${ELEM_KO[foodElem]}(재능·표현 기운)이 필요해요`;
     }
   } else if (weak) {
     if (roles.gwanseong >= roles.jaeseong && roles.gwanseong >= roles.siksang && roles.gwanseong >= 0.8) {
-      yongElem = inElem; yongMethod = "통관(通關)"; yongReason = `관성의 압박이 커 약해진 사주라, 관을 살로 돌려 나를 살리는 인성(${ELEM_KO[inElem]})이 용신이에요(관인상생)`;
+      yongElem = inElem; yongMethod = "통관(通關)"; yongReason = `나를 누르는 기운이 세서 약해진 사주라, 그 압박을 배움·인정으로 돌려 나를 살리는 ${ELEM_KO[inElem]}(받쳐 주는 기운)이 필요해요`;
     } else if (roles.jaeseong >= roles.inseong && roles.jaeseong >= 1.2) {
-      yongElem = myElem; yongReason = `재성이 많아 약해진(재다신약) 사주라, 재물을 감당할 힘을 주는 비겁(${ELEM_KO[myElem]})이 용신이에요`;
+      yongElem = myElem; yongReason = `벌일 일과 욕심(돈 기운)은 많은데 그걸 감당할 내 힘이 아직 여려서, 나와 같은 편인 ${ELEM_KO[myElem]}으로 힘부터 키워야 하는 사주예요`;
     } else {
-      yongElem = inElem; yongReason = `일간을 돕는 기운이 부족한 사주라, 나를 낳아 주는 인성(${ELEM_KO[inElem]})이 용신이에요`;
+      yongElem = inElem; yongReason = `나를 돕는 기운이 부족한 사주라, 나를 채우고 받쳐 주는 ${ELEM_KO[inElem]}이 필요해요`;
     }
   } else {
     // 중화 — 조후 need 있으면 그걸, 없으면 가장 약한 생조 기운
     yongElem = climate.needElem ?? inElem;
     yongReason = climate.needElem != null
-      ? `기운은 균형에 가까워, 계절이 필요로 하는 ${ELEM_KO[climate.needElem]}(조후)을 용신으로 삼아요`
-      : `기운이 두루 균형 잡힌 중화라, 흐름을 부드럽게 잇는 ${ELEM_KO[yongElem]}이 용신이에요`;
+      ? `기운은 거의 균형이라, 태어난 계절에 부족한 ${ELEM_KO[climate.needElem]}으로 온도만 맞춰 주면 되는 사주예요`
+      : `기운이 두루 균형 잡힌 사주라, 흐름을 부드럽게 이어 주는 ${ELEM_KO[yongElem]}이 좋아요`;
   }
 
   // 조후 최우선 override (한난 극단 + 해당 오행 결핍)
   if (climate.critical && climate.needElem != null && yongElem !== climate.needElem && yongMethod !== "전왕(專旺)") {
     yongElem = climate.needElem; yongMethod = "조후(調候)";
-    yongReason = `${climate.season}에 태어나 ${climate.warmth} 기운이 극단이라, 억부보다 계절을 데우고 식히는 조후 ${ELEM_KO[climate.needElem]}이 급선무예요`;
+    yongReason = `${climate.season}에 태어나 기운이 너무 ${climate.warmth === "한(寒)" ? "차가워서" : climate.warmth === "난(暖)" ? "뜨거워서" : "치우쳐서"}, 강약을 따지기 전에 계절의 온도부터 맞춰 주는 ${ELEM_KO[climate.needElem]}이 가장 급해요`;
   }
 
   const heeElem = generatedBy(yongElem);  // 용신을 생하는 오행
